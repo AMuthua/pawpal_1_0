@@ -4,7 +4,8 @@ A new Flutter project.
 
 ## Getting Started
 
-## When you come back here, make sure to make the server keys private. 
+## !. Sort the Backend Keys.. 
+    [x]. Done
 
 This project is a starting point for a Flutter application.
 

@@ -304,11 +304,11 @@ class HomeScreen extends StatelessWidget {
     try {
       final response = await Supabase.instance.client
           .from('profiles')
-          .select('name') // Using 'name' as per our previous discussion. Adjust if your table uses 'display_name'
+          .select('display_name') // Using 'name' as per our previous discussion. Adjust if your table uses 'display_name'
           .eq('id', userId)
           .single();
 
-      return response['name'] as String?;
+      return response['display_name'] as String?;
     } catch (e) {
       // Error handling without a logger: simply return null
       // print('Error fetching display name: $e');

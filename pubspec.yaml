@@ -100,9 +100,9 @@ flutter:
 # This is a configuration test for the icon. 
 # a pawlike icon that is cool lookin' 
 flutter_launcher_icons:
-  android: "launcher_icon" # Can be true or a string path for specific asset name
+  android: true # Can be true or a string path for specific asset name
   ios: true
-  image_path: "assets/appicon/app_icon.png" # Path to your single, high-res icon image
+  image_path: "assets/appicons/app_icon.png" # Path to your single, high-res icon image
   min_sdk_android: 21 # Optional: Set to your project's min Android SDK
   # If you want adaptive icons for Android 8.0+:
   # adaptive_icon_background: "#ffffff" # Or an image path like "assets/images/background.png"

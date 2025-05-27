@@ -489,7 +489,7 @@ class HomeScreen extends StatelessWidget {
                       title: const Text('Book a New Service'),
                       subtitle: const Text('Schedule boarding, grooming, or vet visits'),
                       trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () => context.go('/book'),
+                      onTap: () => context.push('/book'),
                     ),
                     const Divider(),
                     ListTile(
@@ -543,7 +543,7 @@ class HomeScreen extends StatelessWidget {
                           const Text('Total Pets', style: TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
-                            onPressed: () => context.go('/pets'),
+                            onPressed: () => context.push('/pets'),
                             icon: const Icon(Icons.visibility),
                             label: const Text('View Pets'),
                             style: ElevatedButton.styleFrom(

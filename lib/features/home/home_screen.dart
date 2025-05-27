@@ -410,7 +410,7 @@ class HomeScreen extends StatelessWidget {
               title: const Text('Book a Pet Service'),
               onTap: () {
                 Navigator.pop(context);
-                context.go('/book');
+                context.push('/book');
               },
             ),
             ListTile(
@@ -418,7 +418,7 @@ class HomeScreen extends StatelessWidget {
               title: const Text('Manage Pet Profiles'),
               onTap: () {
                 Navigator.pop(context);
-                context.go('/pets');
+                context.push('/pets');
               },
             ),
             ListTile(
@@ -426,7 +426,7 @@ class HomeScreen extends StatelessWidget {
               title: const Text('My Bookings'),
               onTap: () {
                 Navigator.pop(context);
-                context.go('/my_bookings');
+                context.push('/my_bookings');
               },
             ),
             ListTile(
@@ -434,7 +434,7 @@ class HomeScreen extends StatelessWidget {
               title: const Text('Customer Support'),
               onTap: () {
                 Navigator.pop(context);
-                context.go('/support');
+                context.push('/support');
               },
             ),
             const Divider(),

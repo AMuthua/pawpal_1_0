@@ -19,6 +19,7 @@ Setting up is Easy :-
 
 
 
+Copying the pathfile from the explorer is a better idea, as the program may take it as it is. 
 
 
 

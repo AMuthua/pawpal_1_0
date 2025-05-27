@@ -365,13 +365,13 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your PawPal Dashboard'),
-        actions: [
-          IconButton(
-            onPressed: () => _logout(context),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () => _logout(context),
+        //     icon: const Icon(Icons.logout),
+        //     tooltip: 'Logout',
+        //   ),
+        // ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -455,9 +455,11 @@ class HomeScreen extends StatelessWidget {
             FutureBuilder<String?>(
               future: _getDisplayName(),
               builder: (context, snapshot) {
-                final name = snapshot.data ?? userEmail;
+                final name = snapshot.data ?? " "; // which was formerly ...snapshot.data ?? userEmail; 
+                // now there's a null showing instead of the email. 
+
                 return Text(
-                  'Hello, $name!',
+                  'Hello $name 👋🏻',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).primaryColor,
@@ -505,7 +507,7 @@ class HomeScreen extends StatelessWidget {
 
             // Summary Section
             Text(
-              'Your PawPal Overview',
+              'Pet Overview',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -583,7 +585,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           const Text('Upcoming Bookings', textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           ElevatedButton.icon(
                             onPressed: () => context.go('/my_bookings'),
                             icon: const Icon(Icons.list_alt),

@@ -585,7 +585,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           const Text('Upcoming Bookings', textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                           ElevatedButton.icon(
                             onPressed: () => context.go('/my_bookings'),
                             icon: const Icon(Icons.list_alt),

@@ -304,7 +304,7 @@ class HomeScreen extends StatelessWidget {
     try {
       final response = await Supabase.instance.client
           .from('profiles')
-          .select('display_name') // Using 'name' as per our previous discussion. Adjust if your table uses 'display_name'
+          .select('display_name') // Using 'name' as per the profile loggedd in
           .eq('id', userId)
           .single();
 
@@ -317,23 +317,40 @@ class HomeScreen extends StatelessWidget {
   }
 
   // NEW: Fetches the total number of pets for the current user
-  Future<int> _getTotalPets() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return 0; // Return 0 if no user
+//   Future<int> _getTotalPets() async {
+//   final userId = Supabase.instance.client.auth.currentUser?.id;
+//   if (userId == null) return 0; // Return 0 if no user
 
-    try {
-      // Corrected: Call .count() directly after filters
-      final count = await Supabase.instance.client
-          .from('pets')
-          .eq('owner_id', userId)
-          .count(); // This directly returns the count as an integer
+//   try {
+//     final count = await Supabase.instance.client
+//         .from('pets')
+//         .eq('owner_id', userId)
+//         .count(); // ❌ This is incorrect — Supabase doesn't have .count() like this
 
-      return count;
-    } catch (e) {
-      // print('Error fetching total pets: $e');
-      return 0; // Return 0 on error
-    }
+//     return count;
+//   } catch (e) {
+//     return 0;
+//   }
+// }
+
+Future<int> _getTotalPets() async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+  if (userId == null) return 0;
+
+  try {
+    final List pets = await Supabase.instance.client
+        .from('pets')
+        .select('id')
+        .eq('owner_id', userId);
+
+    return pets.length;
+  } catch (e) {
+    return 0;
   }
+}
+
+
+
 
   // NEW: Fetches the number of upcoming approved bookings for the current user
   Future<int> _getUpcomingBookingsCount() async {
@@ -525,20 +542,20 @@ class HomeScreen extends StatelessWidget {
                           const Icon(Icons.pets, size: 40, color: Colors.orange),
                           const SizedBox(height: 8),
                           FutureBuilder<int>(
-                            future: _getTotalPets(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                return const Text('Error', style: TextStyle(fontSize: 24));
-                              } else {
-                                return Text(
-                                  '${snapshot.data ?? 0}', // Display total pets
-                                  style: Theme.of(context).textTheme.displaySmall,
-                                );
-                              }
-                            },
-                          ),
+                              future: _getTotalPets(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (snapshot.hasError) {
+                                  return const Text('Error');
+                                } else {
+                                  return Text(
+                                    '${snapshot.data ?? 0}',
+                                    style: Theme.of(context).textTheme.displaySmall,
+                                  );
+                                }
+                              },
+                            ),
                           const SizedBox(height: 4),
                           const Text('Total Pets', style: TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),

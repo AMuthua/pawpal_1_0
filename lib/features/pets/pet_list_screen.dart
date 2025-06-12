@@ -39,7 +39,7 @@ class _PetListScreenState extends State<PetListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/pets/add'),
+            onPressed: () => context.push('/pets/add'),
           ),
         ],
       ),

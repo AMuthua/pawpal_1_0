@@ -1,6 +1,8 @@
 // ignore: unused_import
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pawpal/features/pets/add_pet_screen.dart';
+import 'package:pawpal/features/pets/pet_list_screen.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
@@ -18,8 +20,12 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/book', builder: (context, state) => const BookServiceScreen()),
-    GoRoute(path: '/pets', builder: (context, state) => const PlaceholderScreen(title: 'Pet Profiles')),
-    GoRoute(path: '/pets/add', builder: (context, state) => const PlaceholderScreen(title: 'Adding Pets')),
+
+    GoRoute(path: '/pets', builder: (context, state) => const PetListScreen()),
+    GoRoute(path: '/pets/add', builder: (context, state) => const AddPetScreen()),
+
+    // GoRoute(path: '/pets', builder: (context, state) => const PlaceholderScreen(title: 'Pet Profiles')),
+    // GoRoute(path: '/pets/add', builder: (context, state) => const PlaceholderScreen(title: 'Adding Pets')),
     GoRoute(path: '/support', builder: (context, state) => const PlaceholderScreen(title: 'Support')),
   ],
 );

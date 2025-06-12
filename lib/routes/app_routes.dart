@@ -19,6 +19,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/book', builder: (context, state) => const BookServiceScreen()),
     GoRoute(path: '/pets', builder: (context, state) => const PlaceholderScreen(title: 'Pet Profiles')),
+    GoRoute(path: '/pets/add', builder: (context, state) => const PlaceholderScreen(title: 'Adding Pets')),
     GoRoute(path: '/support', builder: (context, state) => const PlaceholderScreen(title: 'Support')),
   ],
 );

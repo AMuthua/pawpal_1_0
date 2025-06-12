@@ -364,7 +364,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your PawPal Dashboard'),
+        title: const Text('Your Pet Dashboard'),
         // actions: [
         //   IconButton(
         //     onPressed: () => _logout(context),
@@ -497,7 +497,7 @@ class HomeScreen extends StatelessWidget {
                       title: const Text('Add a New Pet'),
                       subtitle: const Text('Register a new furry friend'),
                       trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () => context.go('/pets/add'), // Assuming you'll have an Add Pet route
+                      onTap: () => context.push('/pets/add'), // Assuming you'll have an Add Pet route
                     ),
                   ],
                 ),

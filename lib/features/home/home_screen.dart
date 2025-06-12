@@ -186,7 +186,12 @@ Future<int> _getTotalPets() async {
           ],
         ),
       ),
-      body: SingleChildScrollView(
+    body: RefreshIndicator(
+      onRefresh: () async {
+        setState(() {}); // Triggers FutureBuilder rebuilds
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +350,8 @@ Future<int> _getTotalPets() async {
             const SizedBox(height: 24),
           ],
         ),
-      ),
+      )
+    ),
     );
   }
 }

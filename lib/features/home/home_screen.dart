@@ -332,7 +332,7 @@ Future<int> _getTotalPets() async {
                           const Text('Upcoming Bookings', textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
-                            onPressed: () => context.go('/my_bookings'),
+                            onPressed: () => context.push('/my_bookings'),
                             icon: const Icon(Icons.list_alt),
                             label: const Text('View All'),
                             style: ElevatedButton.styleFrom(

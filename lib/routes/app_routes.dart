@@ -10,6 +10,7 @@ import '../features/home/home_screen.dart';
 import '../widgets/placeholder_screen.dart';
 import '../features/auth/session_checker.dart';
 import '../features/bookings/book_service_screen.dart';
+import 'package:pawpal/features/bookings/select_pet_for_booking_screen.dart';
 
 
 final GoRouter appRouter = GoRouter(
@@ -19,7 +20,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-    GoRoute(path: '/book', builder: (context, state) => const BookServiceScreen()),
+    // GoRoute(path: '/book', builder: (context, state) => const BookServiceScreen()),
 
     GoRoute(path: '/pets', builder: (context, state) => const PetListScreen()),
     GoRoute(path: '/pets/add', builder: (context, state) => const AddPetScreen()),
@@ -27,5 +28,21 @@ final GoRouter appRouter = GoRouter(
     // GoRoute(path: '/pets', builder: (context, state) => const PlaceholderScreen(title: 'Pet Profiles')),
     // GoRoute(path: '/pets/add', builder: (context, state) => const PlaceholderScreen(title: 'Adding Pets')),
     GoRoute(path: '/support', builder: (context, state) => const PlaceholderScreen(title: 'Support')),
+
+
+    GoRoute(
+      path: '/book',
+      builder: (context, state) => const BookServiceScreen(),
+      routes: [
+        GoRoute(
+          path: 'select-pet/:serviceType', // <--- New sub-route with serviceType parameter
+          builder: (context, state) {
+            final serviceType = state.pathParameters['serviceType']!;
+            return SelectPetForBookingScreen(serviceType: serviceType);
+          },
+        ),
+      ],
+    ),
+
   ],
 );

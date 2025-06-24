@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 // import 'package:go_router/go_router.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -29,14 +30,17 @@ class BookServiceScreen extends StatelessWidget {
               iconColor: Colors.blueAccent,
               title: 'Pet Boarding',
               description: 'Comfortable stays for your furry friends.',
+              // onTap: () {
+              //   // TODO: Navigate to Boarding booking details screen
+              //   // For now, let's just show a snackbar or navigate to a generic next step
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     const SnackBar(content: Text('Boarding selected! (Next step coming soon)')),
+              //   );
+              //   // We'll define a specific route for each service later, or pass a parameter.
+              //   // For example: context.go('/book/boarding');
+              // },
               onTap: () {
-                // TODO: Navigate to Boarding booking details screen
-                // For now, let's just show a snackbar or navigate to a generic next step
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Boarding selected! (Next step coming soon)')),
-                );
-                // We'll define a specific route for each service later, or pass a parameter.
-                // For example: context.go('/book/boarding');
+                context.push('/book/select-pet/Boarding'); // Pass "Boarding" as serviceType
               },
             ),
             const SizedBox(height: 16),
@@ -47,11 +51,15 @@ class BookServiceScreen extends StatelessWidget {
               iconColor: Colors.pinkAccent,
               title: 'Grooming',
               description: 'Keep your pet looking and feeling great.',
+              // onTap: () {
+              //   // TODO: Navigate to Grooming booking details screen
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     const SnackBar(content: Text('Grooming selected! (Next step coming soon)')),
+              //   );
+              // },
+
               onTap: () {
-                // TODO: Navigate to Grooming booking details screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Grooming selected! (Next step coming soon)')),
-                );
+                context.push('/book/select-pet/Grooming'); // Pass "Grooming" as serviceType
               },
             ),
             const SizedBox(height: 16),
@@ -62,11 +70,15 @@ class BookServiceScreen extends StatelessWidget {
               iconColor: Colors.redAccent,
               title: 'Veterinary Services',
               description: 'Routine checkups, vaccinations, and medical care.',
+              // onTap: () {
+              //   // TODO: Navigate to Veterinary booking details screen
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     const SnackBar(content: Text('Veterinary selected! (Next step coming soon)')),
+              //   );
+              // },
+
               onTap: () {
-                // TODO: Navigate to Veterinary booking details screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Veterinary selected! (Next step coming soon)')),
-                );
+                context.push('/book/select-pet/Veterinary'); // Pass "Veterinary" as serviceType
               },
             ),
             const SizedBox(height: 16),

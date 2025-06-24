@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
               decoration: const InputDecoration(labelText: 'Password'),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             ElevatedButton(
               onPressed: _loading ? null : _login,
               child: _loading

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // For date/time formatting, ensure you have intl: ^0.19.0 in pubspec.yaml
-
+// import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart'; // For date/time formatting
 class ScheduleDetailsScreen extends StatefulWidget {
   final String serviceType;
   final String selectedPetId; // We receive the selected pet's ID

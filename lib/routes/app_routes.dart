@@ -14,6 +14,8 @@ import 'package:pawpal/features/bookings/select_pet_for_booking_screen.dart';
 
 import 'package:pawpal/features/bookings/schedule_details_screen.dart';
 
+import 'package:pawpal/features/bookings/booking_confirmation_screen.dart';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   routes: [
@@ -57,11 +59,19 @@ final GoRouter appRouter = GoRouter(
                   selectedPetId: selectedPetId,
                 );
               },
-            ),
-          ],
+      routes: [ // <--- Nested route for booking confirmation
+              GoRoute(
+                path: 'confirm', // e.g., /book/select-pet/Boarding/schedule/confirm
+                builder: (context, state) {
+                  final bookingDetails = state.extra as Map<String, dynamic>;
+                  return BookingConfirmationScreen(bookingDetails: bookingDetails);
+                },                 
+          ),
+        ],
         ),
       ],
     ),
-
+  ],
+  ),
   ],
 );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // For date/time formatting
 class ScheduleDetailsScreen extends StatefulWidget {
   final String serviceType;
@@ -111,11 +111,10 @@ class _ScheduleDetailsScreenState extends State<ScheduleDetailsScreen> {
     };
 
     // TODO: Navigate to BookingConfirmationScreen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Schedule Details: $bookingDetails')),
+    context.push(
+      '/book/select-pet/${widget.serviceType}/schedule/confirm', // Navigate to the new route
+      extra: bookingDetails, // Pass all collected details
     );
-    // Example navigation (will define this route next)
-    // context.push('/book/confirm', extra: bookingDetails);
   }
 
   @override

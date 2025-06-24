@@ -16,6 +16,8 @@ import 'package:pawpal/features/bookings/schedule_details_screen.dart';
 
 import 'package:pawpal/features/bookings/booking_confirmation_screen.dart';
 
+import 'package:pawpal/features/bookings/my_bookings_screen.dart';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   routes: [

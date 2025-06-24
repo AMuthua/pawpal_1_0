@@ -12,6 +12,7 @@ import '../features/auth/session_checker.dart';
 import '../features/bookings/book_service_screen.dart';
 import 'package:pawpal/features/bookings/select_pet_for_booking_screen.dart';
 
+import 'package:pawpal/features/bookings/schedule_details_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -40,6 +41,24 @@ final GoRouter appRouter = GoRouter(
             final serviceType = state.pathParameters['serviceType']!;
             return SelectPetForBookingScreen(serviceType: serviceType);
           },
+
+      routes: [ // <--- Nested route for schedule details
+            GoRoute(
+              path: 'schedule', // e.g., /book/select-pet/Boarding/schedule
+              builder: (context, state) {
+                // We're getting serviceType from the parent route's path,
+                // and selectedPetId from 'extra' as it's not in the path parameters.
+                final serviceType = state.pathParameters['serviceType']!;
+                final bookingData = state.extra as Map<String, dynamic>;
+                final selectedPetId = bookingData['selectedPetId'] as String;
+                
+                return ScheduleDetailsScreen(
+                  serviceType: serviceType,
+                  selectedPetId: selectedPetId,
+                );
+              },
+            ),
+          ],
         ),
       ],
     ),

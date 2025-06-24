@@ -120,16 +120,14 @@ class _SelectPetForBookingScreenState extends State<SelectPetForBookingScreen> {
                         onPressed: _selectedPetId == null
                             ? null // Disable button if no pet is selected
                             : () {
-                                // TODO: Navigate to the Date & Time selection screen,
-                                // passing serviceType and _selectedPetId
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Selected pet: ${_selectedPetId!} for ${widget.serviceType}'),
-                                  ),
+                                // Pass both serviceType and selectedPetId to the next screen
+                                context.push(
+                                  '/book/select-pet/${widget.serviceType}/schedule',
+                                  extra: {
+                                    'selectedPetId': _selectedPetId!,
+                                  },
                                 );
-                                // Example navigation (will define this route next)
-                                // context.push('/book/details', extra: {'serviceType': widget.serviceType, 'petId': _selectedPetId});
-                              },
+                              }, // <--- This is the part that changed
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(50), // Make button wide
                         ),

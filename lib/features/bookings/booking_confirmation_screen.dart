@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+// ignore: unused_import
 import 'package:uuid/uuid.dart'; // For generating UUID for booking ID, if not relying solely on DB default
 
 class BookingConfirmationScreen extends StatefulWidget {

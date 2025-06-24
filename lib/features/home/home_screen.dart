@@ -888,7 +888,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.green,
           value: _upcomingBookingsCount,
           isLoading: _isLoadingBookingsCount,
-          label: 'Upcoming Bookings',
+          label: 'Your Pet Schedule',
           buttonLabel: 'View All',
           // FIXED: Use original route name with underscore
           onPressed: () => context.push('/my_bookings'),

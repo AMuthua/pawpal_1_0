@@ -155,18 +155,155 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
 
   // --- Submit Booking to Supabase ---
-  Future<void> _confirmBooking() async {
-    setState(() => _isBooking = true);
+//   Future<void> _confirmBooking() async {
+//     setState(() => _isBooking = true);
+
+//     try {
+//       final userId = _client.auth.currentUser?.id;
+//       if (userId == null) {
+//         _showSnackBar('User not logged in.', isError: true);
+//         if (mounted) context.go('/login'); // Redirect to login
+//         return;
+//       }
+
+//       // Perform conflict check before saving
+//       final hasConflict = await _checkForConflict();
+//       if (hasConflict) {
+//         _showSnackBar('Selected time slot is already booked. Please choose another.', isError: true);
+//         return;
+//       }
+
+//       // Parse dates and time
+//       final selectedDate = DateTime.parse(widget.bookingDetails['selectedDate'] as String);
+//       final selectedTime = widget.bookingDetails['selectedTime'] as String?;
+//       final selectedEndDate = widget.bookingDetails['selectedEndDate'] != null
+//           ? DateTime.parse(widget.bookingDetails['selectedEndDate'] as String)
+//           : null;
+
+//       // Prepare data for insertion (match schema)
+//       final newBooking = {
+//         'owner_id': userId,
+//         'pet_id': widget.bookingDetails['selectedPetId'],
+//         'service_type': widget.bookingDetails['serviceType'],
+//         'start_date': DateFormat('yyyy-MM-dd').format(selectedDate), // Format for DATE type
+//         'end_date': selectedEndDate != null ? DateFormat('yyyy-MM-dd').format(selectedEndDate) : null,
+//         'start_time': selectedTime, // TIME WITHOUT TIME ZONE accepts HH:MM string
+//         'special_instructions': widget.bookingDetails['specialInstructions'],
+//         'status': 'pending', // Default status
+//         // 'total_price': 0.00, // We'll add actual price calculation later
+//       };
+
+//       await _client.from('bookings').insert(newBooking);
+
+//       _showSnackBar('Booking created successfully!');
+//       if (mounted) context.go('/home'); // Go back to home or a "My Bookings" page
+//     } catch (e) {
+//       _showSnackBar('Failed to create booking: $e', isError: true);
+//     } finally {
+//       if (mounted) {
+//         setState(() => _isBooking = false);
+//       }
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final booking = widget.bookingDetails;
+//     final String serviceType = booking['serviceType'];
+//     final DateTime startDate = DateTime.parse(booking['selectedDate']);
+//     final String? selectedTime = booking['selectedTime'];
+//     final DateTime? endDate = booking['selectedEndDate'] != null ? DateTime.parse(booking['selectedEndDate']) : null;
+//     final String specialInstructions = booking['specialInstructions'] ?? 'None';
+
+//     String formattedDate = DateFormat('EEEE, MMM d, yyyy').format(startDate);
+//     String formattedEndDate = endDate != null ? DateFormat('EEEE, MMM d, yyyy').format(endDate) : 'N/A';
+//     String formattedTime = selectedTime != null ? TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(selectedTime)).format(context) : 'N/A';
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Confirm Booking'),
+//       ),
+//       body: _isBooking
+//           ? const Center(child: CircularProgressIndicator())
+//           : SingleChildScrollView(
+//               padding: const EdgeInsets.all(16.0),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     'Please review your booking details:',
+//                     style: Theme.of(context).textTheme.headlineSmall,
+//                   ),
+//                   const SizedBox(height: 24),
+
+//                   _buildDetailRow(context, 'Service Type', serviceType),
+//                   _buildDetailRow(context, 'Pet Name', _petName),
+//                   _buildDetailRow(context, 'Pet Type', _petType),
+//                   _buildDetailRow(context, 'Service Date', formattedDate),
+//                   if (serviceType == 'Boarding')
+//                     _buildDetailRow(context, 'End Date', formattedEndDate),
+//                   _buildDetailRow(context, 'Service Time', formattedTime),
+//                   _buildDetailRow(context, 'Instructions', specialInstructions),
+                  
+//                   // Placeholder for price - we'll implement this later
+//                   // _buildDetailRow(context, 'Estimated Price', 'KES 0.00'), 
+                  
+//                   const SizedBox(height: 32),
+//                   ElevatedButton(
+//                     onPressed: _confirmBooking,
+//                     style: ElevatedButton.styleFrom(
+//                       minimumSize: const Size.fromHeight(50),
+//                     ),
+//                     child: const Text('Pay Now'),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//     );
+//   }
+
+//   Widget _buildDetailRow(BuildContext context, String label, String value) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 8.0),
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           SizedBox(
+//             width: 120, // Fixed width for labels
+//             child: Text(
+//               '$label:',
+//               style: Theme.of(context).textTheme.titleMedium,
+//             ),
+//           ),
+//           Expanded(
+//             child: Text(
+//               value,
+//               style: Theme.of(context).textTheme.bodyLarge,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+Future<void> _confirmBooking() async {
+    if (_isProcessingPayment) return;
+    
+    setState(() {
+      _isProcessingPayment = true;
+      _isBooking = true;
+    });
 
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
         _showSnackBar('User not logged in.', isError: true);
-        if (mounted) context.go('/login'); // Redirect to login
+        if (mounted) context.go('/login');
         return;
       }
 
-      // Perform conflict check before saving
+      // Perform conflict check
       final hasConflict = await _checkForConflict();
       if (hasConflict) {
         _showSnackBar('Selected time slot is already booked. Please choose another.', isError: true);
@@ -180,89 +317,365 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           ? DateTime.parse(widget.bookingDetails['selectedEndDate'] as String)
           : null;
 
-      // Prepare data for insertion (match schema)
+      // NEW: Get price from booking details
+      final double totalPrice = widget.bookingDetails['totalPrice'] as double? ?? 0.0;
+
+      // Prepare data with price and payment status
       final newBooking = {
         'owner_id': userId,
         'pet_id': widget.bookingDetails['selectedPetId'],
         'service_type': widget.bookingDetails['serviceType'],
-        'start_date': DateFormat('yyyy-MM-dd').format(selectedDate), // Format for DATE type
+        'start_date': DateFormat('yyyy-MM-dd').format(selectedDate),
         'end_date': selectedEndDate != null ? DateFormat('yyyy-MM-dd').format(selectedEndDate) : null,
-        'start_time': selectedTime, // TIME WITHOUT TIME ZONE accepts HH:MM string
+        'start_time': selectedTime,
         'special_instructions': widget.bookingDetails['specialInstructions'],
-        'status': 'pending', // Default status
-        // 'total_price': 0.00, // We'll add actual price calculation later
+        'status': 'pending_payment', // Payment pending status
+        'total_price': totalPrice, // NEW: Include price
       };
 
       await _client.from('bookings').insert(newBooking);
 
-      _showSnackBar('Booking created successfully!');
-      if (mounted) context.go('/home'); // Go back to home or a "My Bookings" page
+      // NEW: Simulate payment processing
+      await _processMpesaPayment();
+
+      if (mounted) context.go('/home');
     } catch (e) {
       _showSnackBar('Failed to create booking: $e', isError: true);
     } finally {
       if (mounted) {
-        setState(() => _isBooking = false);
+        setState(() {
+          _isProcessingPayment = false;
+          _isBooking = false;
+        });
       }
     }
   }
 
+  // NEW: M-Pesa payment simulation
+  Future<void> _processMpesaPayment() async {
+    // Simulate payment processing delay
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // In a real app, this would:
+    // 1. Initiate M-Pesa STK push
+    // 2. Wait for payment confirmation
+    // 3. Update booking status to 'completed'
+    
+    setState(() => _isPaymentCompleted = true);
+    _showSnackBar('Payment successful!', isError: false);
+  }
+
+  // NEW: Calculate boarding days for display
+  int _calculateBoardingDays() {
+    if (widget.bookingDetails['selectedDate'] == null || 
+        widget.bookingDetails['selectedEndDate'] == null) {
+      return 0;
+    }
+    
+    final start = DateTime.parse(widget.bookingDetails['selectedDate']);
+    final end = DateTime.parse(widget.bookingDetails['selectedEndDate']);
+    return end.difference(start).inDays + 1;
+  }
+
   @override
+  // Widget build(BuildContext context) {
+  //   final booking = widget.bookingDetails;
+  //   final serviceType = booking['serviceType'];
+  //   final DateTime startDate = DateTime.parse(booking['selectedDate']);
+  //   final String? selectedTime = booking['selectedTime'];
+  //   final DateTime? endDate = booking['selectedEndDate'] != null 
+  //       ? DateTime.parse(booking['selectedEndDate']) 
+  //       : null;
+  //   final String specialInstructions = booking['specialInstructions'] ?? 'None';
+  //   // NEW: Get price from booking details
+  //   final double totalPrice = booking['totalPrice'] as double? ?? 0.0;
+
+  //   // String formattedDate = DateFormat('EEEE, MMM d, yyyy').format(startDate);
+  //   // String formattedEndDate = endDate != null 
+  //   //     ? DateFormat('EEEE, MMM d, yyyy').format(endDate) 
+  //   //     : 'N/A';
+  //   // String formattedTime = selectedTime != null 
+  //   //     ? TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(selectedTime)).format(context) 
+  //   //     : 'N/A';
+
+  //   // FORMATTED DATE STRINGS
+  //   // ignore: unnecessary_null_comparison
+  //   String formattedDate = startDate != null 
+  //       ? DateFormat('EEEE, MMM d, yyyy').format(startDate)
+  //       : 'Not selected';
+
+  //   String formattedEndDate = endDate != null 
+  //       ? DateFormat('EEEE, MMM d, yyyy').format(endDate)
+  //       : 'N/A';
+
+  //   String formattedTime = selectedTime != null 
+  //       ? TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(selectedTime)).format(context)
+  //       : 'N/A';
+        
+  //   return Scaffold(
+  //     appBar: AppBar(title: const Text('Confirm Booking')),
+  //     body: _isBooking || _isProcessingPayment
+  //         ? const Center(child: CircularProgressIndicator())
+  //         : SingleChildScrollView(
+  //             padding: const EdgeInsets.all(16.0),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Booking Summary',
+  //                   style: Theme.of(context).textTheme.headlineSmall,
+  //                 ),
+  //                 const SizedBox(height: 24),
+                  
+  //                 // NEW: Price display card
+  //                 Card(
+  //                   elevation: 4,
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                   ),
+  //                   child: Padding(
+  //                     padding: const EdgeInsets.all(16.0),
+  //                     child: Column(
+  //                       children: [
+  //                         Row(
+  //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                           children: [
+  //                             const Text('Total Amount:', style: TextStyle(fontSize: 18)),
+  //                             Text(
+  //                               'KES ${totalPrice.toStringAsFixed(2)}',
+  //                               style: const TextStyle(
+  //                                 fontSize: 24,
+  //                                 fontWeight: FontWeight.bold,
+  //                                 color: Colors.green,
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                         const SizedBox(height: 8),
+  //                         if (serviceType == 'Boarding')
+  //                           Text(
+  //                             '(${_calculateBoardingDays()} days boarding)',
+  //                             style: const TextStyle(color: Colors.grey),
+  //                           ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 24),
+
+  //                 Text(
+  //                   'Booking Details',
+  //                   style: Theme.of(context).textTheme.titleLarge,
+  //                 ),
+  //                 const SizedBox(height: 16),
+                  
+  //                 _buildDetailRow(context, 'Service Type', serviceType),
+  //                 _buildDetailRow(context, 'Pet Name', _petName),
+  //                 _buildDetailRow(context, 'Pet Type', _petType),
+  //                 _buildDetailRow(context, 'Service Date', formattedDate),
+  //                 if (serviceType == 'Boarding')
+  //                   _buildDetailRow(context, 'End Date', formattedEndDate),
+  //                 _buildDetailRow(context, 'Service Time', formattedTime),
+  //                 _buildDetailRow(context, 'Instructions', specialInstructions),
+                  
+  //                 const SizedBox(height: 32),
+                  
+  //                 // UPDATED: Payment button with M-Pesa styling
+  //                 if (!_isPaymentCompleted)
+  //                   ElevatedButton(
+  //                     onPressed: _confirmBooking,
+  //                     style: ElevatedButton.styleFrom(
+  //                       minimumSize: const Size.fromHeight(50),
+  //                       backgroundColor: Colors.green,
+  //                     ),
+  //                     child: const Text(
+  //                       'PAY WITH M-PESA',
+  //                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //                     ),
+  //                   ),
+                  
+  //                 // NEW: Payment success UI
+  //                 if (_isPaymentCompleted)
+  //                   Column(
+  //                     children: [
+  //                       const Icon(Icons.check_circle, size: 60, color: Colors.green),
+  //                       const SizedBox(height: 16),
+  //                       const Text(
+  //                         'Payment Successful!',
+  //                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+  //                       ),
+  //                       const SizedBox(height: 16),
+  //                       OutlinedButton(
+  //                         onPressed: () => _generateReceipt(context),
+  //                         child: const Text('VIEW RECEIPT'),
+  //                       ),
+  //                     ],
+  //                   ),
+  //               ],
+  //             ),
+  //           ),
+  //   );
+  // }
+
   Widget build(BuildContext context) {
-    final booking = widget.bookingDetails;
-    final String serviceType = booking['serviceType'];
-    final DateTime startDate = DateTime.parse(booking['selectedDate']);
-    final String? selectedTime = booking['selectedTime'];
-    final DateTime? endDate = booking['selectedEndDate'] != null ? DateTime.parse(booking['selectedEndDate']) : null;
-    final String specialInstructions = booking['specialInstructions'] ?? 'None';
+  final booking = widget.bookingDetails;
+  final serviceType = booking['serviceType'];
+  
+  // SAFE DATE HANDLING
+  DateTime? startDate;
+  String? selectedDate = booking['selectedDate'] as String?;
+  if (selectedDate != null) {
+    startDate = DateTime.tryParse(selectedDate);
+  }
+  
+  DateTime? endDate;
+  String? selectedEndDate = booking['selectedEndDate'] as String?;
+  if (selectedEndDate != null) {
+    endDate = DateTime.tryParse(selectedEndDate);
+  }
+  
+  final String? selectedTime = booking['selectedTime'] as String?;
+  final String specialInstructions = booking['specialInstructions'] ?? 'None';
+  final double totalPrice = booking['totalPrice'] as double? ?? 0.0;
 
-    String formattedDate = DateFormat('EEEE, MMM d, yyyy').format(startDate);
-    String formattedEndDate = endDate != null ? DateFormat('EEEE, MMM d, yyyy').format(endDate) : 'N/A';
-    String formattedTime = selectedTime != null ? TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(selectedTime)).format(context) : 'N/A';
+  // FORMATTED DATE STRINGS
+  String formattedDate = startDate != null 
+      ? DateFormat('EEEE, MMM d, yyyy').format(startDate)
+      : 'Not selected';
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Confirm Booking'),
-      ),
-      body: _isBooking
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Please review your booking details:',
-                    style: Theme.of(context).textTheme.headlineSmall,
+  String formattedEndDate = endDate != null 
+      ? DateFormat('EEEE, MMM d, yyyy').format(endDate)
+      : 'N/A';
+
+  String formattedTime = selectedTime != null 
+      ? TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(selectedTime)).format(context)
+      : 'N/A';
+
+  return Scaffold(
+    appBar: AppBar(title: const Text('Confirm Booking')),
+    body: _isBooking || _isProcessingPayment
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Booking Summary',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 24),
+                
+                // Price display card
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total Amount:', style: TextStyle(fontSize: 18)),
+                            Text(
+                              'KES ${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (serviceType == 'Boarding')
+                          Text(
+                            '(${_calculateBoardingDays()} days boarding)',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
 
-                  _buildDetailRow(context, 'Service Type', serviceType),
-                  _buildDetailRow(context, 'Pet Name', _petName),
-                  _buildDetailRow(context, 'Pet Type', _petType),
-                  _buildDetailRow(context, 'Service Date', formattedDate),
-                  if (serviceType == 'Boarding')
-                    _buildDetailRow(context, 'End Date', formattedEndDate),
-                  _buildDetailRow(context, 'Service Time', formattedTime),
-                  _buildDetailRow(context, 'Instructions', specialInstructions),
-                  
-                  // Placeholder for price - we'll implement this later
-                  // _buildDetailRow(context, 'Estimated Price', 'KES 0.00'), 
-                  
-                  const SizedBox(height: 32),
+                Text(
+                  'Booking Details',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                
+                _buildDetailRow(context, 'Service Type', serviceType),
+                _buildDetailRow(context, 'Pet Name', _petName),
+                _buildDetailRow(context, 'Pet Type', _petType),
+                _buildDetailRow(context, 'Service Date', formattedDate),
+                if (serviceType == 'Boarding')
+                  _buildDetailRow(context, 'End Date', formattedEndDate),
+                _buildDetailRow(context, 'Service Time', formattedTime),
+                _buildDetailRow(context, 'Instructions', specialInstructions),
+                
+                const SizedBox(height: 32),
+                
+                // Payment button
+                if (!_isPaymentCompleted)
                   ElevatedButton(
                     onPressed: _confirmBooking,
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.green,
                     ),
-                    child: const Text('Pay Now'),
+                    child: const Text(
+                      'PAY WITH M-PESA',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ],
-              ),
+                
+                // Payment success UI
+                if (_isPaymentCompleted)
+                  Column(
+                    children: [
+                      const Icon(Icons.check_circle, size: 60, color: Colors.green),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Payment Successful!',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: () => _generateReceipt(context),
+                        child: const Text('VIEW RECEIPT'),
+                      ),
+                    ],
+                  ),
+              ],
             ),
+          ),
+  );
+}
+
+  // NEW: Receipt generation (simulated)
+  void _generateReceipt(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Receipt Generated'),
+        content: const Text('Your receipt has been generated successfully.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
+  // ... keep existing _buildDetailRow and other methods ...
+
+    Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -286,3 +699,4 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     );
   }
 }
+

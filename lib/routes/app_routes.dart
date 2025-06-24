@@ -79,5 +79,13 @@ final GoRouter appRouter = GoRouter(
       path: '/my_bookings',
       builder: (context, state) => const MyBookingsScreen(),
     ),
+
+  GoRoute(
+        path: '/booking_confirmation',
+        builder: (context, state) {
+          final bookingDetails = state.extra as Map<String, dynamic>;
+          return BookingConfirmationScreen(bookingDetails: bookingDetails);
+        },
+      ),
   ],
 );

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
+
+
 class BookServiceScreen extends StatefulWidget {
   const BookServiceScreen({super.key});
 
@@ -67,7 +69,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
           _petFetchError = 'Failed to load pets: $e';
         });
       }
-      print('Error fetching pets: $e');
+      // print('Error fetching pets: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -89,7 +91,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
         if (_startDate != null && _endDate != null) {
           final difference = _endDate!.difference(_startDate!).inDays;
           // Add 1 to include both start and end day for pricing
-          calculatedPrice = (difference + 1) * 500.0; // KES 500 per day
+          calculatedPrice = (difference + 1) * 388.0; // KES 388 per day
         }
         break;
       case 'Grooming':
@@ -129,8 +131,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
           // Ensure end date is not before start date
           if (_startDate != null && _endDate!.isBefore(_startDate!)) {
             _endDate = _startDate; // Set end date to start date if invalid
-          } else if (_startDate == null) {
-            _startDate = picked; // If start date not set, set it to end date
+          } else {
+            _startDate ??= picked;
           }
         }
         _calculatePrice(); // Recalculate price on date change
@@ -226,6 +228,21 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
 
   void _navigateToConfirmation() {
   if (!_formKey.currentState!.validate()) {
+    return;
+  }
+
+  // Add null checks for dates
+  if (_startDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a start date')),
+    );
+    return;
+  }
+
+  if (_selectedServiceType == 'Boarding' && _endDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select an end date for boarding')),
+    );
     return;
   }
 

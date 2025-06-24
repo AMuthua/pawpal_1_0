@@ -152,7 +152,7 @@ class BookingCard extends StatelessWidget {
     final String petName = (booking['pets'] as Map<String, dynamic>?)?['name'] ?? 'Unknown Pet';
     final String petType = (booking['pets'] as Map<String, dynamic>?)?['type'] ?? 'Unknown Type';
     final String instructions = booking['special_instructions'] ?? 'None';
-    // final double? price = booking['total_price'] as double?; // Uncomment when price is implemented
+    final double? price = booking['total_price'] as double?; // Uncomment when price is implemented
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
@@ -201,8 +201,8 @@ class BookingCard extends StatelessWidget {
               _buildInfoRow(context, Icons.notes, 'Instructions:', instructions),
 
             // Price (Uncomment when ready)
-            // if (price != null)
-            //   _buildInfoRow(context, Icons.attach_money, 'Price:', 'KES ${price.toStringAsFixed(2)}'),
+            if (price != null)
+              _buildInfoRow(context, Icons.attach_money, 'Price:', 'KES ${price.toStringAsFixed(2)}'),
           ],
         ),
       ),

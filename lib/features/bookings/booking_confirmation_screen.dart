@@ -15,10 +15,15 @@ class BookingConfirmationScreen extends StatefulWidget {
 }
 
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
+
   late final SupabaseClient _client;
   bool _isBooking = false;
   String _petName = 'Loading...';
   String _petType = 'Loading...';
+
+  // Add payment state variables
+  bool _isProcessingPayment = false;
+  bool _isPaymentCompleted = false;
 
   @override
   void initState() {
@@ -249,7 +254,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                     ),
-                    child: const Text('Book Now'),
+                    child: const Text('Pay Now'),
                   ),
                 ],
               ),

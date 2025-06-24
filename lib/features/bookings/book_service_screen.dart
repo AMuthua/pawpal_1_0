@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -154,78 +150,115 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
     }
   }
 
-  Future<void> _bookAndPay() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  // Future<void> _bookAndPay() async {
+  //   if (!_formKey.currentState!.validate()) {
+  //     return;
+  //   }
 
-    if (_totalPrice <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a service and dates to calculate price.')),
-      );
-      return;
-    }
+  //   if (_totalPrice <= 0) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Please select a service and dates to calculate price.')),
+  //     );
+  //     return;
+  //   }
 
-    // --- Placeholder for M-Pesa Integration ---
-    // In a real app, you would initiate the M-Pesa STK Push here.
-    // This typically involves:
-    // 1. Sending the payment details (amount, phone number, booking details) to your Backend (e.g., Supabase Edge Function/Cloud Function).
-    // 2. Your Backend calls the Daraja API to initiate the STK Push.
-    // 3. The user receives an M-Pesa prompt on their phone to enter their PIN.
-    // 4. M-Pesa sends a callback to your Backend with the payment status.
-    // 5. Your Backend then updates the booking status in Supabase based on payment success/failure.
-    // 6. Your Flutter app listens for this status update or gets a response from your Backend.
+  //   // --- Placeholder for M-Pesa Integration ---
+  //   // In a real app, you would initiate the M-Pesa STK Push here.
+  //   // This typically involves:
+  //   // 1. Sending the payment details (amount, phone number, booking details) to your Backend (e.g., Supabase Edge Function/Cloud Function).
+  //   // 2. Your Backend calls the Daraja API to initiate the STK Push.
+  //   // 3. The user receives an M-Pesa prompt on their phone to enter their PIN.
+  //   // 4. M-Pesa sends a callback to your Backend with the payment status.
+  //   // 5. Your Backend then updates the booking status in Supabase based on payment success/failure.
+  //   // 6. Your Flutter app listens for this status update or gets a response from your Backend.
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Initiating M-Pesa payment for KES ${_totalPrice.toStringAsFixed(2)}... (M-Pesa integration coming soon!)')),
-    );
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text('Initiating M-Pesa payment for KES ${_totalPrice.toStringAsFixed(2)}... (M-Pesa integration coming soon!)')),
+  //   );
 
-    // For now, let's simulate a successful booking after a delay
-    // In a real scenario, this 'insert' would happen AFTER successful M-Pesa payment confirmation.
-    try {
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) {
-        if (mounted) context.go('/login');
-        return;
-      }
+  //   // For now, let's simulate a successful booking after a delay
+  //   // In a real scenario, this 'insert' would happen AFTER successful M-Pesa payment confirmation.
+  //   try {
+  //     final userId = _client.auth.currentUser?.id;
+  //     if (userId == null) {
+  //       if (mounted) context.go('/login');
+  //       return;
+  //     }
 
-      final Map<String, dynamic> newBooking = {
-        'owner_id': userId,
-        'pet_id': _selectedPetId,
-        'service_type': _selectedServiceType,
-        'start_date': _startDate!.toIso8601String().split('T')[0],
-        'end_date': _endDate?.toIso8601String().split('T')[0], // Nullable
-        'start_time': _startTime?.format(context), // Convert to HH:mm string
-        'special_instructions': _instructionsController.text.trim(),
-        'status': 'pending_payment', // Set status to pending payment
-        'total_price': _totalPrice, // Include the calculated total price
-        'created_at': DateTime.now().toIso8601String(),
-      };
+  //     final Map<String, dynamic> newBooking = {
+  //       'owner_id': userId,
+  //       'pet_id': _selectedPetId,
+  //       'service_type': _selectedServiceType,
+  //       'start_date': _startDate!.toIso8601String().split('T')[0],
+  //       'end_date': _endDate?.toIso8601String().split('T')[0], // Nullable
+  //       'start_time': _startTime?.format(context), // Convert to HH:mm string
+  //       'special_instructions': _instructionsController.text.trim(),
+  //       'status': 'pending_payment', // Set status to pending payment
+  //       'total_price': _totalPrice, // Include the calculated total price
+  //       'created_at': DateTime.now().toIso8601String(),
+  //     };
 
-      await _client.from('bookings').insert(newBooking);
+  //     await _client.from('bookings').insert(newBooking);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking request submitted! Waiting for payment confirmation.')),
-        );
-        context.pop(); // Go back after booking
-      }
-    } on PostgrestException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error submitting booking: ${e.message}')),
-        );
-      }
-      print('Supabase error: ${e.message}');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An unexpected error occurred: $e')),
-        );
-      }
-      print('Generic error: $e');
-    }
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Booking request submitted! Waiting for payment confirmation.')),
+  //       );
+  //       context.pop(); // Go back after booking
+  //     }
+  //   } on PostgrestException catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Error submitting booking: ${e.message}')),
+  //       );
+  //     }
+  //     print('Supabase error: ${e.message}');
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('An unexpected error occurred: $e')),
+  //       );
+  //     }
+  //     print('Generic error: $e');
+  //   }
+  // }
+
+
+  void _navigateToConfirmation() {
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
+
+  if (_totalPrice <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a service and dates to calculate price.')),
+    );
+    return;
+  }
+
+  // Prepare booking details
+  final Map<String, dynamic> bookingDetails = {
+    'selectedPetId': _selectedPetId,
+    'serviceType': _selectedServiceType,
+    'startDate': _startDate?.toIso8601String(),
+    'endDate': _endDate?.toIso8601String(),
+    'startTime': _startTime?.format(context),
+    'specialInstructions': _instructionsController.text.trim(),
+    'totalPrice': _totalPrice,
+    'petName': _pets.firstWhere(
+      (pet) => pet['id'] == _selectedPetId,
+      orElse: () => {'name': 'Unknown', 'type': 'Unknown'},
+    )['name'],
+    'petType': _pets.firstWhere(
+      (pet) => pet['id'] == _selectedPetId,
+      orElse: () => {'name': 'Unknown', 'type': 'Unknown'},
+    )['type'],
+  };
+
+  // Navigate to confirmation screen
+  context.push('/booking_confirmation', extra: bookingDetails);
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -441,12 +474,32 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                             const SizedBox(height: 24),
 
                             // Book Now and Pay Button
-                            SizedBox(
+                            // SizedBox(
+                            //   width: double.infinity,
+                            //   child: ElevatedButton.icon(
+                            //     onPressed: _bookAndPay,
+                            //     icon: const Icon(Icons.payment),
+                            //     label: const Text('Book Now and Pay'),
+                            //     style: ElevatedButton.styleFrom(
+                            //       padding: const EdgeInsets.symmetric(vertical: 16),
+                            //       backgroundColor: Theme.of(context).colorScheme.primary,
+                            //       foregroundColor: Colors.white,
+                            //       textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            //             fontWeight: FontWeight.bold,
+                            //           ),
+                            //       shape: RoundedRectangleBorder(
+                            //         borderRadius: BorderRadius.circular(12),
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
+
+                          SizedBox(
                               width: double.infinity,
                               child: ElevatedButton.icon(
-                                onPressed: _bookAndPay,
-                                icon: const Icon(Icons.payment),
-                                label: const Text('Book Now and Pay'),
+                                onPressed: _navigateToConfirmation,
+                                icon: const Icon(Icons.arrow_forward),
+                                label: const Text('Review and Pay'),
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   backgroundColor: Theme.of(context).colorScheme.primary,
@@ -459,7 +512,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                   ),
                                 ),
                               ),
-                            ),
+                            ),  
                           ],
                         ),
                       ),

@@ -218,7 +218,7 @@ Future<int> _getTotalPets() async {
 
             // Quick Actions Section
             Text(
-              'Quick Actions',
+              'Would you like to?',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -252,7 +252,7 @@ Future<int> _getTotalPets() async {
 
             // Summary Section
             Text(
-              'Pet Overview',
+              'Your Pet Overview',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),

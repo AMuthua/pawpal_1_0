@@ -76,7 +76,7 @@ final GoRouter appRouter = GoRouter(
   ],
   ),
   GoRoute(
-      path: '/my-bookings',
+      path: '/my_bookings',
       builder: (context, state) => const MyBookingsScreen(),
     ),
   ],

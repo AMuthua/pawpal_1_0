@@ -203,6 +203,22 @@ class BookingCard extends StatelessWidget {
             // Price (Uncomment when ready)
             if (price != null)
               _buildInfoRow(context, Icons.attach_money, 'Price:', 'KES ${price.toStringAsFixed(2)}'),
+            const SizedBox(height: 8),
+            // --- VIEW DETAILS BUTTON ---
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: const Text('View Details'),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BookingDetailsScreen(booking: booking),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -232,8 +248,10 @@ class BookingCard extends StatelessWidget {
           ),
         ],
       ),
+      
     );
   }
+  
 
   String _formatDateRange(DateTime start, DateTime? end) {
     if (end != null && start.year == end.year && start.month == end.month && start.day == end.day) {
@@ -274,3 +292,116 @@ class BookingCard extends StatelessWidget {
     }
   }
 }
+
+
+class BookingDetailsScreen extends StatelessWidget {
+  final Map<String, dynamic> booking;
+  const BookingDetailsScreen({super.key, required this.booking});
+
+  @override
+  Widget build(BuildContext context) {
+    final pet = booking['pets'] ?? {};
+    final petName = pet['name'] ?? 'Unknown';
+    final petType = pet['type'] ?? 'Unknown';
+    final serviceType = booking['service_type'] ?? '';
+    final status = booking['status'] ?? '';
+    final startDate = DateTime.parse(booking['start_date']);
+    final endDate = booking['end_date'] != null ? DateTime.parse(booking['end_date']) : startDate;
+    final dayCount = (endDate.difference(startDate).inDays + 1);
+    final pricePerDay = booking['price_per_day'] as double? ?? 0.0;
+    final totalPrice = booking['total_price'] as double? ?? 0.0;
+    final procedures = booking['procedures'] as List<dynamic>? ?? [];
+    final specialInstructions = booking['special_instructions'] ?? 'None';
+
+    return Scaffold(
+            appBar: AppBar(
+        title: const Text('Booking Details'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            Text(
+              '$petName (${petType})',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Service Type: $serviceType', style: Theme.of(context).textTheme.bodyLarge),
+            Text('Status: $status', style: Theme.of(context).textTheme.bodyLarge),
+            const Divider(height: 32),
+
+            // Date and Days
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'From: ${DateFormat('MMM d, yyyy').format(startDate)}  To: ${DateFormat('MMM d, yyyy').format(endDate)}',
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(Icons.today, size: 18),
+                const SizedBox(width: 8),
+                Text('Number of Days: $dayCount'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Price per Day
+            Row(
+              children: [
+                const Icon(Icons.attach_money, size: 18),
+                const SizedBox(width: 8),
+                Text('Price per Day: KES ${pricePerDay.toStringAsFixed(2)}'),
+              ],
+            ),
+            const Divider(height: 32),
+
+            // Procedures Section
+            if (procedures.isNotEmpty) ...[
+              Text('Procedures:', style: Theme.of(context).textTheme.titleMedium),
+              ...procedures.map<Widget>((proc) {
+                final procName = proc['name'] ?? 'Procedure';
+                final procPrice = proc['price'] ?? 0;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(procName, style: Theme.of(context).textTheme.bodyMedium),
+                      Text('KES ${procPrice.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                );
+              }),
+              const Divider(height: 32),
+            ],
+
+            // Special Instructions
+            if (specialInstructions.isNotEmpty && specialInstructions != 'None') ...[
+              const Text('Special Instructions:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 16),
+                child: Text(specialInstructions),
+              ),
+            ],
+
+            // Total Price
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total Price:', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'KES ${totalPrice.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

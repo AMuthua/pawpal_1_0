@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:pawpal/services/pdf_receipt_service.dart';
+
+
+
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
 
@@ -61,6 +65,19 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         } else {
           tempUpcoming.add(booking);
         }
+
+        // if (endDate.isBefore(now)) {
+        //   if (booking['status'] == 'approved') {
+        //     await _client
+        //       .from('bookings')
+        //       .update({'status': 'completed'})
+        //       .eq('id', booking['id']);
+        //     booking['status'] = 'completed'; // Update local object too
+        //   }
+        //   tempPast.add(booking);
+        // } else {
+        //   tempUpcoming.add(booking);
+        // }
       }
 
       if (mounted) {
@@ -398,6 +415,62 @@ class BookingDetailsScreen extends StatelessWidget {
                 ),
               ],
             ),
+                      const SizedBox(height: 24),
+
+          // ElevatedButton.icon(
+          //   onPressed: () {
+          //     generateAndHandleReceipt(booking); // 👈 This comes from your helper
+          //   },
+          //   icon: const Icon(Icons.picture_as_pdf, size: 20),
+          //   label: const Text('Download Receipt'),
+          //   style: ElevatedButton.styleFrom(
+          //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          //     backgroundColor: Theme.of(context).colorScheme.primary,
+          //     foregroundColor: Colors.white,
+          //     elevation: 2,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(8),
+          //     ),
+          //     textStyle: Theme.of(context).textTheme.labelLarge,
+          //   ),
+          // ),
+
+            Row(
+                  mainAxisSize: MainAxisSize.min, // Prevents row from expanding
+                  children: [
+                    // Your existing button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        generateAndHandleReceipt(booking);
+                      },
+                      icon: const Icon(Icons.picture_as_pdf, size: 20),
+                      label: const Text('Download Receipt'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                      ),
+                    ),
+                    
+                    SizedBox(width: 10), // Space between buttons
+                    
+                    // Additional buttons (example)
+                    // ElevatedButton.icon(
+                    //   onPressed: () {},
+                    //   icon: Icon(Icons.share),
+                    //   label: Text('Share'),
+                    //   style: ElevatedButton.styleFrom(
+                    //     // Your custom style
+                    //   ),
+                    // ),
+                  ],
+                )
+
           ],
         ),
       ),

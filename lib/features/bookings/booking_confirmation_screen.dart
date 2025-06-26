@@ -2,7 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:pawpal/services/pdf_receipt_service.dart' as pdf_service show generateAndHandleReceipt;
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:pawpal/services/pdf_receipt_service.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic> bookingDetails;
@@ -224,20 +227,52 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     );
   }
 
-  void _generateReceipt(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Receipt Generated'),
-        content: const Text('Your receipt has been generated successfully.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+  // void _generateReceipt(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Receipt Generated'),
+  //       content: const Text('Your receipt has been generated successfully.'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('OK'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  void _generateReceipt(BuildContext context) async {
+    try {
+      // You need to pass the complete booking details (including pet and procedures)
+      // to the receipt service. The widget.bookingDetails map should contain all of this.
+      // Make sure the 'pet' key and 'procedures' key (if applicable) are in widget.bookingDetails
+      // when you navigate to this screen or fetch them here if not.
+      // Assuming widget.bookingDetails contains the full data needed for the receipt.
+      await pdf_service.generateAndHandleReceipt(widget.bookingDetails);
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Receipt Generated'),
+            content: const Text('Your receipt has been generated successfully.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Failed to generate or handle receipt: $e', isError: true);
+      }
+      print('Error generating/handling receipt: $e');
+    }
   }
 
   @override
@@ -330,7 +365,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       backgroundColor: Colors.green,
                     ),
                     child: const Text(
-                      'PAY WITH M-PESA',
+                      'PAY FOR SERVICE',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),

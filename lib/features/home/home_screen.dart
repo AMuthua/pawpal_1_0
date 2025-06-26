@@ -318,6 +318,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _upcomingBookingsCount = 0;
   bool _isLoadingBookingsCount = true;
 
+  
+
   @override
   void initState() {
     super.initState();

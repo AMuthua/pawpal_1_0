@@ -26,3 +26,5 @@ class PdfHandlerWeb extends PdfHandlerBase {
 // //  whether it will compile without this. for mobile app. 
 // IT HAS!!!!
 // SO TO MAKE MOBILE i NEED TO COMMENT THIS PAGE OUT AND PDF RECEIPT SERVICE. 
+// The Good thing is that, It has no problem to compile the app as well for web usage. 
+        // Too early to say?

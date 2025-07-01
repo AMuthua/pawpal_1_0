@@ -1,3 +1,8 @@
+/*
+  This is the Bookings page where all bookings are done and dusted.
+*/ 
+
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';

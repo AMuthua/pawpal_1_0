@@ -421,25 +421,6 @@ class BookingDetailsScreen extends StatelessWidget {
               ],
             ),
                       const SizedBox(height: 24),
-
-          // ElevatedButton.icon(
-          //   onPressed: () {
-          //     generateAndHandleReceipt(booking); // 👈 This comes from your helper
-          //   },
-          //   icon: const Icon(Icons.picture_as_pdf, size: 20),
-          //   label: const Text('Download Receipt'),
-          //   style: ElevatedButton.styleFrom(
-          //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          //     backgroundColor: Theme.of(context).colorScheme.primary,
-          //     foregroundColor: Colors.white,
-          //     elevation: 2,
-          //     shape: RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.circular(8),
-          //     ),
-          //     textStyle: Theme.of(context).textTheme.labelLarge,
-          //   ),
-          // ),
-
             Row(
                   mainAxisSize: MainAxisSize.min, // Prevents row from expanding
                   children: [

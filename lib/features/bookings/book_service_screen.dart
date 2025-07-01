@@ -1,3 +1,12 @@
+/*
+  This is the official booking page where you select the services:
+    1. The UI needs to be refreshed and explain to the client what they are doing
+    2. Touch on on the contrast of fonts.
+
+*/ 
+
+
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

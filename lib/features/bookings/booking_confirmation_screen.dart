@@ -1,11 +1,455 @@
-// Testing Refactored code. 
+// import 'package:flutter/material.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:intl/intl.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:provider/provider.dart'; // Import provider
+// import 'package:pawpal/providers/booking_provider.dart'; // Import BookingProvider
+
+// // Import the platform-agnostic PDF service
+// import 'package:pawpal/services/pdf_receipt_service.dart' as pdf_service;
+
+// class BookingConfirmationScreen extends StatefulWidget {
+//   final Map<String, dynamic> bookingDetails;
+
+//   const BookingConfirmationScreen({super.key, required this.bookingDetails});
+
+//   @override
+//   State<BookingConfirmationScreen> createState() => _BookingConfirmationScreenState();
+// }
+
+// class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
+//   late final SupabaseClient _client;
+//   bool _isBooking = false;
+//   bool _isProcessingPayment = false;
+//   bool _isPaymentCompleted = false;
+
+//   // Directly use pet details from bookingDetails, no need to fetch again
+//   late final Map<String, dynamic> _petDetails;
+//   late final String _petName;
+//   late final String _petType;
+//   late final String _petBreed; // NEW: Added pet breed
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _client = Supabase.instance.client;
+
+//     // --- NEW: Debugging and Initial Data Validation ---
+//     debugPrint('BookingConfirmationScreen received bookingDetails: ${widget.bookingDetails}');
+
+//     // Safely access 'pet' map and its 'name'/'type'/'breed'
+//     _petDetails = widget.bookingDetails['pet'] as Map<String, dynamic>? ?? {};
+//     _petName = _petDetails['name'] as String? ?? 'Unnamed Pet';
+//     _petType = _petDetails['type'] as String? ?? 'Unknown Type';
+//     _petBreed = _petDetails['breed'] as String? ?? 'Unknown Breed'; // NEW: Get pet breed
+
+//     // Perform initial checks for critical data
+//     if (!widget.bookingDetails.containsKey('start_date') || widget.bookingDetails['start_date'] == null) {
+//       _showSnackBar('Error: Booking start date is missing from previous screen.', isError: true);
+//       // Future.microtask(() => context.pop()); // Uncomment to pop back if critical data is missing
+//     }
+//     if (!widget.bookingDetails.containsKey('service_type') || widget.bookingDetails['service_type'] == null) {
+//       _showSnackBar('Error: Service type is missing from previous screen.', isError: true);
+//       // Future.microtask(() => context.pop());
+//     }
+//     if (!widget.bookingDetails.containsKey('pet_id') || widget.bookingDetails['pet_id'] == null) {
+//       _showSnackBar('Error: Pet ID is missing from previous screen.', isError: true);
+//       // Future.microtask(() => context.pop());
+//     }
+//     // --- END NEW: Debugging and Initial Data Validation ---
+//   }
+
+//   void _showSnackBar(String message, {bool isError = false}) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(
+//         content: Text(message),
+//         backgroundColor: isError ? Colors.red : Colors.green,
+//       ),
+//     );
+//   }
+
+//   Future<bool> _checkForConflict() async {
+//     // Use the correct keys from bookingDetails
+//     final String? serviceType = widget.bookingDetails['service_type'] as String?;
+//     final String? selectedDateString = widget.bookingDetails['start_date'] as String?;
+//     final String? selectedEndDateString = widget.bookingDetails['end_date'] as String?;
+    
+//     if (serviceType == null || selectedDateString == null) {
+//       _showSnackBar('Missing essential booking details for conflict check.', isError: true);
+//       return true;
+//     }
+
+//     final DateTime? startDate = DateTime.tryParse(selectedDateString);
+//     final DateTime? endDate = selectedEndDateString != null
+//         ? DateTime.tryParse(selectedEndDateString)
+//         : null;
+
+//     if (startDate == null) {
+//       _showSnackBar('Invalid start date format.', isError: true);
+//       return true;
+//     }
+//     final DateTime bookingEndDate = endDate ?? startDate;
+
+//     try {
+//       final conflicts = await _client
+//           .from('bookings')
+//           .select('id, start_date, end_date')
+//           .eq('service_type', serviceType)
+//           .inFilter('status', ['pending', 'approved']);
+
+//       for (final booking in conflicts) {
+//         final existingStartDateStr = booking['start_date'] as String?;
+//         final existingEndDateStr = booking['end_date'] as String?;
+//         if (existingStartDateStr == null) continue;
+//         final DateTime? existingStartDate = DateTime.tryParse(existingStartDateStr);
+//         final DateTime existingEndDate = existingEndDateStr != null
+//             ? (DateTime.tryParse(existingEndDateStr) ?? existingStartDate!)
+//             : existingStartDate!;
+        
+//         // Ensure existingStartDate is not null before comparison
+//         if (existingStartDate == null) continue;
+
+//         // Overlap check.
+//         // We add 1 day to the end date to make the range inclusive for the last day.
+//         // This ensures that a booking ending on day X conflicts with a booking starting on day X.
+//         if (
+//           startDate.isBefore(existingEndDate.add(const Duration(days: 1))) &&
+//           bookingEndDate.add(const Duration(days: 1)).isAfter(existingStartDate)
+//         ) {
+//           return true; // Conflict found
+//         }
+//       }
+//       return false; // No conflict
+//     } catch (e) {
+//       _showSnackBar('Error checking for conflicts: $e', isError: true);
+//       print('Error checking for conflicts: $e'); // For debugging
+//       return true; // Assume conflict on error to prevent double booking
+//     }
+//   }
+
+//   Future<void> _confirmBooking() async {
+//     if (_isProcessingPayment) return; // Prevent multiple taps
+
+//     setState(() {
+//       _isProcessingPayment = true;
+//       _isBooking = true;
+//     });
+
+//     try {
+//       final userId = _client.auth.currentUser?.id;
+//       if (userId == null) {
+//         _showSnackBar('User not logged in.', isError: true);
+//         if (mounted) context.go('/login');
+//         return;
+//       }
+
+//       // Check for conflicts before proceeding
+//       if (await _checkForConflict()) {
+//         if (mounted) {
+//           setState(() {
+//             _isProcessingPayment = false;
+//             _isBooking = false;
+//           });
+//         }
+//         return; // Stop booking process
+//       }
+
+//       // Prepare data for Supabase insertion using the correct keys
+//       final Map<String, dynamic> bookingDataToSave = {
+//         'owner_id': userId,
+//         'pet_id': widget.bookingDetails['pet_id'], // Use the pet_id passed
+//         'service_type': widget.bookingDetails['service_type'],
+//         'start_date': widget.bookingDetails['start_date'],
+//         'end_date': widget.bookingDetails['end_date'],
+//         'start_time': widget.bookingDetails['start_time'],
+//         'special_instructions': widget.bookingDetails['special_instructions'],
+//         'total_price': widget.bookingDetails['total_price'],
+//         'status': 'pending', // Default status for new bookings
+//         'procedures': widget.bookingDetails['procedures'] ?? [], // Ensure procedures are passed, even if empty
+//       };
+
+//       await _client.from('bookings').insert(bookingDataToSave);
+
+//       // Simulate payment processing (replace with actual payment gateway)
+//       await Future.delayed(const Duration(seconds: 2));
+
+//       if (mounted) {
+//         setState(() {
+//           _isPaymentCompleted = true;
+//         });
+//         _showSnackBar('Booking confirmed and payment successful!');
+        
+//         // Notify BookingProvider to refresh data on Home Screen and My Bookings
+//         Provider.of<BookingProvider>(context, listen: false).fetchBookings();
+//       }
+//     } catch (e) {
+//       if (mounted) {
+//         _showSnackBar('Booking failed: $e', isError: true);
+//         print('Booking failed: $e'); // For debugging
+//       }
+//     } finally {
+//       if (mounted) {
+//         setState(() {
+//           _isProcessingPayment = false;
+//           _isBooking = false;
+//         });
+//       }
+//     }
+//   }
+
+//   // Receipt generation (now uses the platform-agnostic service)
+//   void _generateReceipt() async {
+//     try {
+//       // Pass the complete booking details for receipt generation.
+//       // This map should already contain 'pet' and 'procedures' from BookServiceScreen.
+//       await pdf_service.generateAndHandleReceipt(widget.bookingDetails);
+
+//       if (mounted) {
+//         showDialog(
+//           context: context,
+//           builder: (context) => AlertDialog(
+//             title: const Text('Receipt Generated'),
+//             content: const Text('Your receipt has been generated successfully.'),
+//             actions: [
+//               TextButton(
+//                 onPressed: () => Navigator.pop(context),
+//                 child: const Text('OK'),
+//               ),
+//             ],
+//           ),
+//         );
+//       }
+//     } catch (e) {
+//       if (mounted) {
+//         _showSnackBar('Failed to generate or handle receipt: $e', isError: true);
+//       }
+//       print('Error generating/handling receipt: $e');
+//     }
+//   }
+
+//   // Helper to calculate boarding days for display
+//   int _calculateBoardingDays() {
+//     final String? startStr = widget.bookingDetails['start_date'] as String?;
+//     final String? endStr = widget.bookingDetails['end_date'] as String?;
+//     if (startStr == null) return 0; // Start date is mandatory
+
+//     final DateTime? start = DateTime.tryParse(startStr);
+//     if (start == null) return 0;
+
+//     final DateTime? end = endStr != null ? DateTime.tryParse(endStr) : null;
+
+//     if (end == null || end.isBefore(start)) {
+//       return 1; // For single-day services or invalid end date, count as 1 day
+//     }
+//     return end.difference(start).inDays + 1;
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // Extract details for display, using the corrected keys
+//     final String serviceType = widget.bookingDetails['service_type'] as String? ?? 'N/A';
+//     final String? startDateString = widget.bookingDetails['start_date'] as String?;
+//     final String? endDateString = widget.bookingDetails['end_date'] as String?;
+//     final String? startTime = widget.bookingDetails['start_time'] as String?;
+//     final String specialInstructions = widget.bookingDetails['special_instructions'] as String? ?? 'None';
+//     final double totalPrice = (widget.bookingDetails['total_price'] as num?)?.toDouble() ?? 0.0;
+
+//     // Format dates for display
+//     String formattedStartDate = startDateString != null
+//         ? DateFormat('MMM d,yyyy').format(DateTime.parse(startDateString))
+//         : 'N/A';
+//     String formattedEndDate = endDateString != null
+//         ? DateFormat('MMM d,yyyy').format(DateTime.parse(endDateString))
+//         : formattedStartDate; // If no end date, it's a single-day service
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Confirm Booking'),
+//         backgroundColor: Theme.of(context).colorScheme.primary,
+//         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+//       ),
+//       body: _isBooking || _isProcessingPayment
+//           ? Center(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   const CircularProgressIndicator(),
+//                   const SizedBox(height: 16),
+//                   Text(_isBooking ? 'Confirming Booking...' : 'Processing Payment...',
+//                     style: Theme.of(context).textTheme.titleMedium,
+//                   ),
+//                 ],
+//               ),
+//             )
+//           : SingleChildScrollView(
+//               padding: const EdgeInsets.all(16.0),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     'Review Your Booking Details',
+//                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+//                           fontWeight: FontWeight.bold,
+//                           color: Theme.of(context).colorScheme.onBackground,
+//                         ),
+//                   ),
+//                   const SizedBox(height: 16),
+//                   Card(
+//                     elevation: 4,
+//                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//                     child: Padding(
+//                       padding: const EdgeInsets.all(16.0),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           _buildDetailRow(context, Icons.pets, 'Pet Name:', _petName),
+//                           _buildDetailRow(context, Icons.category, 'Pet Type:', _petType),
+//                           _buildDetailRow(context, Icons.pets_sharp, 'Pet Breed:', _petBreed), // NEW: Display pet breed
+//                           _buildDetailRow(context, Icons.medical_services, 'Service Type:', serviceType),
+//                           _buildDetailRow(context, Icons.calendar_today, 'Start Date:', formattedStartDate),
+//                           if (serviceType == 'Boarding') // Only show end date for boarding
+//                             _buildDetailRow(context, Icons.calendar_today, 'End Date:', formattedEndDate),
+//                           if (startTime != null && startTime.isNotEmpty)
+//                             _buildDetailRow(context, Icons.access_time, 'Preferred Time:', startTime),
+//                           _buildDetailRow(context, Icons.notes, 'Instructions:', specialInstructions),
+//                           const Divider(height: 24),
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                             children: [
+//                               Text(
+//                                 'Total Price:',
+//                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
+//                                       fontWeight: FontWeight.bold,
+//                                       color: Theme.of(context).colorScheme.onBackground,
+//                                     ),
+//                               ),
+//                               Text(
+//                                 'KES ${totalPrice.toStringAsFixed(2)}',
+//                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
+//                                       fontWeight: FontWeight.bold,
+//                                       color: Theme.of(context).colorScheme.primary,
+//                                     ),
+//                               ),
+//                             ],
+//                           ),
+//                           if (serviceType == 'Boarding')
+//                             Padding(
+//                               padding: const EdgeInsets.only(top: 8.0),
+//                               child: Text(
+//                                 '(${_calculateBoardingDays()} days boarding)',
+//                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
+//                                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+//                                     ),
+//                               ),
+//                             ),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 24),
+//                   SizedBox(
+//                     width: double.infinity,
+//                     child: ElevatedButton.icon(
+//                       onPressed: _isBooking || _isProcessingPayment ? null : _confirmBooking,
+//                       icon: _isBooking
+//                           ? const CircularProgressIndicator(color: Colors.white)
+//                           : _isPaymentCompleted
+//                               ? const Icon(Icons.check_circle_outline)
+//                               : const Icon(Icons.payment),
+//                       label: Text(
+//                         _isBooking
+//                             ? 'Processing...'
+//                             : _isPaymentCompleted
+//                                 ? 'Booking Confirmed!'
+//                                 : 'Confirm Booking & Pay',
+//                       ),
+//                       style: ElevatedButton.styleFrom(
+//                         padding: const EdgeInsets.symmetric(vertical: 16),
+//                         backgroundColor: _isPaymentCompleted
+//                             ? Colors.green[700] // Green when confirmed
+//                             : Theme.of(context).colorScheme.primary,
+//                         foregroundColor: Colors.white,
+//                         textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(12),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 16),
+//                   if (_isPaymentCompleted)
+//                     SizedBox(
+//                       width: double.infinity,
+//                       child: OutlinedButton.icon(
+//                         onPressed: _generateReceipt,
+//                         icon: const Icon(Icons.receipt_long),
+//                         label: const Text('Get Receipt'),
+//                         style: OutlinedButton.styleFrom(
+//                           padding: const EdgeInsets.symmetric(vertical: 16),
+//                           side: BorderSide(color: Theme.of(context).colorScheme.primary),
+//                           foregroundColor: Theme.of(context).colorScheme.primary,
+//                           textStyle: Theme.of(context).textTheme.titleMedium,
+//                           shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   const SizedBox(height: 16),
+//                   SizedBox(
+//                     width: double.infinity,
+//                     child: TextButton(
+//                       onPressed: () => context.pop(), // Go back to the booking form
+//                       child: Text(
+//                         'Go Back to Edit',
+//                         style: TextStyle(color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7)),
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//     );
+//   }
+
+//   Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 8.0),
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+//           const SizedBox(width: 12),
+//           Text(
+//             label,
+//             style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+//           ),
+//           const SizedBox(width: 8),
+//           Expanded(
+//             child: Text(
+//               value,
+//               style: Theme.of(context).textTheme.bodyLarge,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:pawpal/services/pdf_receipt_service.dart' as pdf_service show generateAndHandleReceipt;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart'; // Import provider
+import 'package:pawpal/providers/booking_provider.dart'; // Import BookingProvider
 
-import 'package:pawpal/services/pdf_receipt_service.dart';
+// Import the platform-agnostic PDF service
+import 'package:pawpal/services/pdf_receipt_service.dart' as pdf_service;
 
 class BookingConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic> bookingDetails;
@@ -19,43 +463,43 @@ class BookingConfirmationScreen extends StatefulWidget {
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   late final SupabaseClient _client;
   bool _isBooking = false;
-  String _petName = 'Loading...';
-  String _petType = 'Loading...';
   bool _isProcessingPayment = false;
   bool _isPaymentCompleted = false;
+
+  // Directly use pet details from bookingDetails, no need to fetch again
+  late final Map<String, dynamic> _petDetails;
+  late final String _petName;
+  late final String _petType;
+  late final String _petBreed; // NEW: Added pet breed
 
   @override
   void initState() {
     super.initState();
     _client = Supabase.instance.client;
-    _fetchPetDetails();
-  }
 
-  Future<void> _fetchPetDetails() async {
-    try {
-      final String? petId = widget.bookingDetails['selectedPetId'] as String?;
-      if (petId == null) throw Exception('No pet selected.');
-      final response = await _client
-          .from('pets')
-          .select('name, type')
-          .eq('id', petId)
-          .maybeSingle();
+    // --- NEW: Debugging and Initial Data Validation ---
+    debugPrint('BookingConfirmationScreen received bookingDetails: ${widget.bookingDetails}');
 
-      if (mounted) {
-        setState(() {
-          _petName = response?['name'] as String? ?? 'Unnamed Pet';
-          _petType = response?['type'] as String? ?? 'Unknown Type';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _petName = 'Error';
-          _petType = 'Error';
-        });
-      }
-      _showSnackBar('Failed to load pet details: $e', isError: true);
+    // Safely access 'pet' map and its 'name'/'type'/'breed'
+    _petDetails = widget.bookingDetails['pet'] as Map<String, dynamic>? ?? {};
+    _petName = _petDetails['name'] as String? ?? 'Unnamed Pet';
+    _petType = _petDetails['type'] as String? ?? 'Unknown Type';
+    _petBreed = _petDetails['breed'] as String? ?? 'N/A'; // NEW: Get pet breed, default to N/A
+
+    // Perform initial checks for critical data
+    if (!widget.bookingDetails.containsKey('start_date') || widget.bookingDetails['start_date'] == null) {
+      _showSnackBar('Error: Booking start date is missing from previous screen.', isError: true);
+      // Future.microtask(() => context.pop()); // Uncomment to pop back if critical data is missing
     }
+    if (!widget.bookingDetails.containsKey('service_type') || widget.bookingDetails['service_type'] == null) {
+      _showSnackBar('Error: Service type is missing from previous screen.', isError: true);
+      // Future.microtask(() => context.pop());
+    }
+    if (!widget.bookingDetails.containsKey('pet_id') || widget.bookingDetails['pet_id'] == null) {
+      _showSnackBar('Error: Pet ID is missing from previous screen.', isError: true);
+      // Future.microtask(() => context.pop());
+    }
+    // --- END NEW: Debugging and Initial Data Validation ---
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
@@ -68,9 +512,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<bool> _checkForConflict() async {
-    final String? serviceType = widget.bookingDetails['serviceType'] as String?;
-    final String? selectedDateString = widget.bookingDetails['startDate'] as String?;
-    final String? selectedEndDateString = widget.bookingDetails['endDate'] as String?;
+    // Use the correct keys from bookingDetails
+    final String? serviceType = widget.bookingDetails['service_type'] as String?;
+    final String? selectedDateString = widget.bookingDetails['start_date'] as String?;
+    final String? selectedEndDateString = widget.bookingDetails['end_date'] as String?;
+    
     if (serviceType == null || selectedDateString == null) {
       _showSnackBar('Missing essential booking details for conflict check.', isError: true);
       return true;
@@ -86,6 +532,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       return true;
     }
     final DateTime bookingEndDate = endDate ?? startDate;
+
     try {
       final conflicts = await _client
           .from('bookings')
@@ -101,23 +548,31 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         final DateTime existingEndDate = existingEndDateStr != null
             ? (DateTime.tryParse(existingEndDateStr) ?? existingStartDate!)
             : existingStartDate!;
+        
+        // Ensure existingStartDate is not null before comparison
+        if (existingStartDate == null) continue;
+
         // Overlap check.
+        // We add 1 day to the end date to make the range inclusive for the last day.
+        // This ensures that a booking ending on day X conflicts with a booking starting on day X.
         if (
           startDate.isBefore(existingEndDate.add(const Duration(days: 1))) &&
-          bookingEndDate.add(const Duration(days: 1)).isAfter(existingStartDate!)
+          bookingEndDate.add(const Duration(days: 1)).isAfter(existingStartDate)
         ) {
-          return true;
+          return true; // Conflict found
         }
       }
-      return false;
+      return false; // No conflict
     } catch (e) {
       _showSnackBar('Error checking for conflicts: $e', isError: true);
-      return true;
+      print('Error checking for conflicts: $e'); // For debugging
+      return true; // Assume conflict on error to prevent double booking
     }
   }
 
   Future<void> _confirmBooking() async {
-    if (_isProcessingPayment) return;
+    if (_isProcessingPayment) return; // Prevent multiple taps
+
     setState(() {
       _isProcessingPayment = true;
       _isBooking = true;
@@ -131,52 +586,50 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         return;
       }
 
-      // if (await _checkForConflict()) {
-      //   _showSnackBar('Selected dates are already booked. Please choose others.', isError: true);
-      //   return;
-      // }
-
-      final String? selectedDateString = widget.bookingDetails['startDate'] as String?;
-      final String? selectedEndDateString = widget.bookingDetails['endDate'] as String?;
-      if (selectedDateString == null) {
-        _showSnackBar('Service start date is required.', isError: true);
-        return;
-      }
-      final DateTime? selectedDate = DateTime.tryParse(selectedDateString);
-      DateTime? selectedEndDate = selectedEndDateString != null ? DateTime.tryParse(selectedEndDateString) : null;
-      if (selectedDate == null) {
-        _showSnackBar('Invalid start date.', isError: true);
-        return;
-      }
-      if (selectedEndDateString != null && selectedEndDate == null) {
-        _showSnackBar('Invalid end date.', isError: true);
-        return;
+      // Check for conflicts before proceeding
+      if (await _checkForConflict()) {
+        if (mounted) {
+          setState(() {
+            _isProcessingPayment = false;
+            _isBooking = false;
+          });
+        }
+        return; // Stop booking process
       }
 
-      final String? selectedPetId = widget.bookingDetails['selectedPetId'] as String?;
-      final String? serviceType = widget.bookingDetails['serviceType'] as String?;
-      final String specialInstructions = widget.bookingDetails['specialInstructions'] as String? ?? '';
-      final double totalPrice = widget.bookingDetails['totalPrice'] as double? ?? 0.0;
-
-      final Map<String, dynamic> newBooking = {
+      // Prepare data for Supabase insertion using the correct keys
+      final Map<String, dynamic> bookingDataToSave = {
         'owner_id': userId,
-        'pet_id': selectedPetId,
-        'service_type': serviceType,
-        'start_date': DateFormat('yyyy-MM-dd').format(selectedDate),
-        'end_date': selectedEndDate != null ? DateFormat('yyyy-MM-dd').format(selectedEndDate) : null,
-                'special_instructions': specialInstructions,
-        'status': 'pending_payment',
-        'total_price': totalPrice,
+        'pet_id': widget.bookingDetails['pet_id'], // Use the pet_id passed
+        'service_type': widget.bookingDetails['service_type'],
+        'start_date': widget.bookingDetails['start_date'],
+        'end_date': widget.bookingDetails['end_date'],
+        'start_time': widget.bookingDetails['start_time'],
+        'special_instructions': widget.bookingDetails['special_instructions'],
+        'total_price': widget.bookingDetails['total_price'],
+        'status': 'pending', // Default status for new bookings
+        'procedures': widget.bookingDetails['procedures'] ?? [], // Ensure procedures are passed, even if empty
       };
 
-      await _client.from('bookings').insert(newBooking);
+      await _client.from('bookings').insert(bookingDataToSave);
 
-      // Simulate payment processing
-      await _processMpesaPayment();
+      // Simulate payment processing (replace with actual payment gateway)
+      await Future.delayed(const Duration(seconds: 2));
 
-      if (mounted) context.go('/home');
+      if (mounted) {
+        setState(() {
+          _isPaymentCompleted = true;
+        });
+        _showSnackBar('Booking confirmed and payment successful!');
+        
+        // Notify BookingProvider to refresh data on Home Screen and My Bookings
+        Provider.of<BookingProvider>(context, listen: false).fetchBookings();
+      }
     } catch (e) {
-      _showSnackBar('Failed to create booking: $e', isError: true);
+      if (mounted) {
+        _showSnackBar('Booking failed: $e', isError: true);
+        print('Booking failed: $e'); // For debugging
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -187,69 +640,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     }
   }
 
-  Future<void> _processMpesaPayment() async {
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isPaymentCompleted = true);
-    _showSnackBar('Payment successful!', isError: false);
-  }
-
-  int _calculateBoardingDays() {
-    final String? startStr = widget.bookingDetails['startDate'] as String?;
-    final String? endStr = widget.bookingDetails['endDate'] as String?;
-    if (startStr == null || endStr == null) return 0;
-    final DateTime? start = DateTime.tryParse(startStr);
-    final DateTime? end = DateTime.tryParse(endStr);
-    if (start == null || end == null || end.isBefore(start)) return 0;
-    return end.difference(start).inDays + 1;
-  }
-
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // void _generateReceipt(BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Receipt Generated'),
-  //       content: const Text('Your receipt has been generated successfully.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('OK'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  void _generateReceipt(BuildContext context) async {
+  // Receipt generation (now uses the platform-agnostic service)
+  void _generateReceipt() async {
     try {
-      // You need to pass the complete booking details (including pet and procedures)
-      // to the receipt service. The widget.bookingDetails map should contain all of this.
-      // Make sure the 'pet' key and 'procedures' key (if applicable) are in widget.bookingDetails
-      // when you navigate to this screen or fetch them here if not.
-      // Assuming widget.bookingDetails contains the full data needed for the receipt.
+      // Pass the complete booking details for receipt generation.
+      // This map should already contain 'pet' and 'procedures' from BookServiceScreen.
       await pdf_service.generateAndHandleReceipt(widget.bookingDetails);
 
       if (mounted) {
@@ -275,120 +670,206 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     }
   }
 
+  // Helper to calculate boarding days for display
+  int _calculateBoardingDays() {
+    final String? startStr = widget.bookingDetails['start_date'] as String?;
+    final String? endStr = widget.bookingDetails['end_date'] as String?;
+    if (startStr == null) return 0; // Start date is mandatory
+
+    final DateTime? start = DateTime.tryParse(startStr);
+    if (start == null) return 0;
+
+    final DateTime? end = endStr != null ? DateTime.tryParse(endStr) : null;
+
+    if (end == null || end.isBefore(start)) {
+      return 1; // For single-day services or invalid end date, count as 1 day
+    }
+    return end.difference(start).inDays + 1;
+  }
+
   @override
   Widget build(BuildContext context) {
-  final booking = widget.bookingDetails;
-  final String? serviceType = booking['serviceType'] as String?;
-  DateTime? startDate = booking['startDate'] != null
-      ? DateTime.tryParse(booking['startDate'] as String)
-      : null;
-  DateTime? endDate = booking['endDate'] != null
-      ? DateTime.tryParse(booking['endDate'] as String)
-      : null;
-  final String specialInstructions = booking['specialInstructions'] as String? ?? 'None';
-  final double totalPrice = booking['totalPrice'] as double? ?? 0.0;
+    // Extract details for display, using the corrected keys
+    final String serviceType = widget.bookingDetails['service_type'] as String? ?? 'N/A';
+    final String? startDateString = widget.bookingDetails['start_date'] as String?;
+    final String? endDateString = widget.bookingDetails['end_date'] as String?;
+    final String? startTime = widget.bookingDetails['start_time'] as String?;
+    final String specialInstructions = widget.bookingDetails['special_instructions'] as String? ?? 'TBC Upon Recieval of the Pet';
+    final double totalPrice = (widget.bookingDetails['total_price'] as num?)?.toDouble() ?? 0.0;
 
-  String formattedStartDate = startDate != null
-      ? DateFormat('EEEE, MMM d, yyyy').format(startDate)
-      : 'Not selected';
-  String formattedEndDate = endDate != null
-      ? DateFormat('EEEE, MMM d, yyyy').format(endDate)
-      : 'N/A';
+    // Format dates for display
+    String formattedStartDate = startDateString != null
+        ? DateFormat('MMM d,yyyy').format(DateTime.parse(startDateString))
+        : 'N/A';
+    String formattedEndDate = endDateString != null
+        ? DateFormat('MMM d,yyyy').format(DateTime.parse(endDateString))
+        : formattedStartDate; // If no end date, it's a single-day service
 
-  return Scaffold(
-    appBar: AppBar(title: const Text('Confirm Booking')),
-    body: _isBooking || _isProcessingPayment
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Booking Summary',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 24),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total Amount:', style: TextStyle(fontSize: 18)),
-                            Text(
-                              'KES ${totalPrice.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Confirm Booking'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      ),
+      body: _isBooking || _isProcessingPayment
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(_isBooking ? 'Confirming Booking...' : 'Processing Payment...',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Review Your Booking Details',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailRow(context, Icons.pets, 'Pet Name:', _petName),
+                          _buildDetailRow(context, Icons.category, 'Pet Type:', _petType),
+                          _buildDetailRow(context, Icons.pets_sharp, 'Pet Breed:', _petBreed), // NEW: Display pet breed
+                          _buildDetailRow(context, Icons.medical_services, 'Service Type:', serviceType),
+                          _buildDetailRow(context, Icons.calendar_today, 'Start Date:', formattedStartDate),
+                          if (serviceType == 'Boarding') // Only show end date for boarding
+                            _buildDetailRow(context, Icons.calendar_today, 'End Date:', formattedEndDate),
+                          if (startTime != null && startTime.isNotEmpty)
+                            _buildDetailRow(context, Icons.access_time, 'Preferred Time:', startTime),
+                          _buildDetailRow(context, Icons.notes, 'Instructions:', specialInstructions),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Price:',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.onBackground,
+                                    ),
+                              ),
+                              Text(
+                                'KES ${totalPrice.toStringAsFixed(2)}',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          if (serviceType == 'Boarding')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                '(${_calculateBoardingDays()} days boarding)',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                    ),
                               ),
                             ),
-                          ],
-                        ),
-                        // RE-ADDED: Number of days under price for boarding
-                        if (serviceType == 'Boarding')
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              '(${_calculateBoardingDays()} days boarding)',
-                              style: const TextStyle(color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isBooking || _isProcessingPayment
+                          ? null
+                          : (_isPaymentCompleted ? () => context.go('/home') : _confirmBooking), // Modified onPressed
+                      icon: _isBooking
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : _isPaymentCompleted
+                              ? const Icon(Icons.check_circle_outline)
+                              : const Icon(Icons.payment),
+                      label: Text(
+                        _isBooking
+                            ? 'Processing...'
+                            : _isPaymentCompleted
+                                ? 'Return Home' // Modified label
+                                : 'Confirm Booking & Pay',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: _isPaymentCompleted
+                            ? Colors.green[700] // Green when confirmed
+                            : Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isPaymentCompleted)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _generateReceipt,
+                        icon: const Icon(Icons.receipt_long),
+                        label: const Text('Get Receipt'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                          foregroundColor: Theme.of(context).colorScheme.primary,
+                          textStyle: Theme.of(context).textTheme.titleMedium,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Booking Details',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                _buildDetailRow(context, 'Service Type', serviceType ?? 'Unknown'),
-                _buildDetailRow(context, 'Pet Name', _petName),
-                _buildDetailRow(context, 'Pet Type', _petType),
-                _buildDetailRow(context, 'Start Date', formattedStartDate),
-                if (serviceType == 'Boarding')
-                  _buildDetailRow(context, 'End Date', formattedEndDate),
-                _buildDetailRow(context, 'Instructions', specialInstructions),
-                const SizedBox(height: 32),
-                if (!_isPaymentCompleted)
-                  ElevatedButton(
-                    onPressed: _confirmBooking, // (see updated confirmBooking below)
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text(
-                      'PAY FOR SERVICE',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                if (_isPaymentCompleted)
-                  Column(
-                    children: [
-                      const Icon(Icons.check_circle, size: 60, color: Colors.green),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Payment Successful!',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      OutlinedButton(
-                        onPressed: () => _generateReceipt(context),
-                        child: const Text('VIEW RECEIPT'),
-                      ),
-                    ],
-                  ),
-              ],
+                    ),
+                  // Removed the "Go Back to Edit" TextButton as it's now redundant
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-  );
+        ],
+      ),
+    );
+  }
 }
-}
-

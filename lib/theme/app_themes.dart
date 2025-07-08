@@ -31,9 +31,7 @@ class AppThemes {
       secondary: _lightSecondaryColor, // Complementary accent color
       onSecondary: Colors.black87, // Text/icons on secondary color
       surface: Colors.white, // Background for cards, sheets, dialogs
-      onSurface: Colors.black87, // Text/icons on surface
-      background: Colors.grey[50]!, // A very subtle off-white for main background
-      onBackground: Colors.black87, // Text/icons on background
+      onSurface: Colors.black87, // Text/icons on background
       error: Colors.red,
       onError: Colors.white,
     ),
@@ -109,9 +107,7 @@ class AppThemes {
       secondary: _darkSecondaryColor, // Complementary accent color
       onSecondary: Colors.black87, // Text/icons on secondary color
       surface: Colors.grey[850]!, // Darker surface for cards, dialogs
-      onSurface: Colors.white70, // Lighter text/icons on dark surfaces
-      background: Colors.grey[900]!, // Deep dark gray background
-      onBackground: Colors.white70, // Lighter text/icons on dark backgrounds
+      onSurface: Colors.white70, // Lighter text/icons on dark backgrounds
       error: Colors.redAccent,
       onError: Colors.white,
     ),

@@ -101,7 +101,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
                 'Tell us about your furry friend!',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
               ),
               const SizedBox(height: 24),

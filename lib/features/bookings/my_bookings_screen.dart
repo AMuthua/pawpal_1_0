@@ -1176,7 +1176,7 @@ class BookingCard extends StatelessWidget {
           SizedBox(
             width: 90, // Adjust width as needed for labels
             child: Text(
-              '$label',
+              label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
@@ -1326,7 +1326,7 @@ class BookingDetailsScreen extends StatelessWidget {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
               const Divider(height: 32),
             ],
 

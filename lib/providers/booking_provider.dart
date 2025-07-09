@@ -98,6 +98,10 @@ class BookingProvider extends ChangeNotifier {
     fetchBookings(); // Fetch bookings when the provider is created
   }
 
+  get upcomingBookings => null;
+
+  get bookings => null;
+
   Future<void> fetchBookings() async {
     _isLoading = true;
     _errorMessage = null;

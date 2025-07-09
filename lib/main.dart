@@ -1,4 +1,5 @@
-// // // lib/main.dart
+
+// // lib/main.dart
 // import 'package:flutter/material.dart';
 // import 'package:pawpal/routes/app_routes.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,7 +13,7 @@
 // // Import your new data providers
 // import 'package:pawpal/providers/pet_provider.dart';
 // import 'package:pawpal/providers/booking_provider.dart';
-// import 'package:pawpal/providers/profile_provider.dart'; // NEW: Import ProfileProvider
+// import 'package:pawpal/providers/admin_stats_provider.dart'; // NEW: Import AdminStatsProvider
 
 
 // void main() async {
@@ -32,9 +33,10 @@
 //   final themeService = ThemeService();
 //   await themeService.loadThemeMode(); // Ensure theme preference is loaded before running the app
   
-//   // Create initial instances of data providers (only those that are singletons or need pre-init)
+//   // Create initial instances of data providers
 //   final petProvider = PetProvider();
 //   final bookingProvider = BookingProvider();
+//   final adminStatsProvider = AdminStatsProvider(); // NEW: Create instance of AdminStatsProvider
 
 //   // Run the app, providing all services/providers to the widget tree
 //   runApp(
@@ -43,8 +45,8 @@
 //         ChangeNotifierProvider<ThemeService>(create: (context) => themeService),
 //         ChangeNotifierProvider<PetProvider>(create: (context) => petProvider),
 //         ChangeNotifierProvider<BookingProvider>(create: (context) => bookingProvider),
-//         // FIXED: Instantiate ProfileProvider directly in the create callback
-//         ChangeNotifierProvider<ProfileProvider>(create: (context) => ProfileProvider()), 
+//         ChangeNotifierProvider<AdminStatsProvider>(create: (context) => adminStatsProvider),
+//         ChangeNotifierProvider(create: (_) => PetProvider()), // NEW: Add AdminStatsProvider
 //       ],
 //       child: const MyApp(),
 //     ),
@@ -81,12 +83,15 @@
 
 
 
+
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:pawpal/routes/app_routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart'; // Import the provider package
+import 'package:flutter/foundation.dart' show kIsWeb; // NEW: Import kIsWeb
+import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // NEW: Import for setUrlStrategy
 
 // Import your theme files
 import 'package:pawpal/theme/app_themes.dart';
@@ -96,11 +101,17 @@ import 'package:pawpal/theme/theme_service.dart';
 import 'package:pawpal/providers/pet_provider.dart';
 import 'package:pawpal/providers/booking_provider.dart';
 import 'package:pawpal/providers/admin_stats_provider.dart'; // NEW: Import AdminStatsProvider
+import 'package:pawpal/providers/profile_provider.dart'; // NEW: Import ProfileProvider
 
 
 void main() async {
   // Ensure Flutter widgets are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // NEW: Set URL strategy only once and only for web
+  if (kIsWeb) {
+    setUrlStrategy(PathUrlStrategy());
+  }
 
   // Load environment variables from .env file
   await dotenv.load(fileName: ".env");
@@ -128,6 +139,7 @@ void main() async {
         ChangeNotifierProvider<PetProvider>(create: (context) => petProvider),
         ChangeNotifierProvider<BookingProvider>(create: (context) => bookingProvider),
         ChangeNotifierProvider<AdminStatsProvider>(create: (context) => adminStatsProvider), // NEW: Add AdminStatsProvider
+        ChangeNotifierProvider<ProfileProvider>(create: (context) => ProfileProvider()), // Ensure ProfileProvider is here
       ],
       child: const MyApp(),
     ),

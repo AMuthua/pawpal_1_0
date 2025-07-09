@@ -1,5 +1,6 @@
-package com.example.pawpal_1_0
+package com.example.pawpal10 // Replace with your actual package name
 
 import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity: FlutterActivity() {
+}

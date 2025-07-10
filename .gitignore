@@ -48,3 +48,6 @@ app.*.map.json
 .env
 lib/assets/appicons/vecteezy_animal-paw-print-black-silhouette-icon-illustration-for_54059205_331.zip
 lib/assets/appicons/app_icon(paw).ai
+supabase/functions/mpesa-handler/index.ts
+supabase/functions/_shared/cors.ts
+supabase/functions/mpesa-handler/deno.json

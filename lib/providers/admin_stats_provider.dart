@@ -1,6 +1,7 @@
 // TODO Implement this library.// lib/providers/admin_stats_provider.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+// ignore: unnecessary_import
 import 'package:postgrest/postgrest.dart'; // Required for CountOption
 
 class AdminStatsProvider extends ChangeNotifier {

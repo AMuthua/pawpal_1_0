@@ -1684,6 +1684,8 @@ class BookingCard extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'pending':
         return Colors.orange;
+      case 'paid':
+        return Colors.green;
       case 'approved':
         return Colors.green;
       case 'rejected':
@@ -1762,13 +1764,13 @@ class BookingDetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // Price per Day (if applicable, otherwise it will be 0.0)
-            Row(
-              children: [
-                const Icon(Icons.attach_money, size: 18),
-                const SizedBox(width: 8),
-                Text('Price per Day: KES ${pricePerDay.toStringAsFixed(2)}'),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     const Icon(Icons.attach_money, size: 18),
+            //     const SizedBox(width: 8),
+            //     Text('Price per Day: KES ${pricePerDay.toStringAsFixed(2)}'),
+            //   ],
+            // ),
             const Divider(height: 32),
 
             // Procedures Section

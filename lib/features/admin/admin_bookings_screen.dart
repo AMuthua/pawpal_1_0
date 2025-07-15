@@ -1964,6 +1964,8 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
       case 'pending':
         return Colors.orange;
       case 'approved':
+        return Colors.lightBlue;
+      case 'paid':
         return Colors.green;
       case 'rejected':
         return Colors.red;

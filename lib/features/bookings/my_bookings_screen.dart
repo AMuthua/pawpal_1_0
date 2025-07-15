@@ -1687,7 +1687,7 @@ class BookingCard extends StatelessWidget {
       case 'paid':
         return Colors.green;
       case 'approved':
-        return Colors.green;
+        return Colors.lightBlue;
       case 'rejected':
         return Colors.red;
       case 'completed':

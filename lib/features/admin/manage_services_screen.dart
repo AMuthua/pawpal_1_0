@@ -1,5 +1,3 @@
-// // TODO Implement this library.
-
 // import 'package:flutter/material.dart';
 // import 'package:go_router/go_router.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,7 +8,7 @@
 //   final String name;
 //   final String description;
 //   final double price;
-//   final int durationMinutes;
+//   final int durationMinutes; // For Boarding, this will represent 'days'
 
 //   Service({
 //     required this.id,
@@ -68,7 +66,6 @@
 //       _errorMessage = null;
 //     });
 //     try {
-//       // Replace 'services' with your actual Supabase table name
 //       final response = await supabase.from('services').select().order('name', ascending: true);
 
 //       _services = response.map((json) => Service.fromMap(json)).toList();
@@ -87,7 +84,6 @@
 
 //   Future<void> _addService(Service service) async {
 //     try {
-//       // Replace 'services' with your actual Supabase table name
 //       await supabase.from('services').insert(service.toMap());
 //       if (mounted) {
 //         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +108,6 @@
 
 //   Future<void> _updateService(Service service) async {
 //     try {
-//       // Replace 'services' with your actual Supabase table name and 'id' column
 //       await supabase.from('services').update(service.toMap()).eq('id', service.id);
 //       if (mounted) {
 //         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +153,6 @@
 //     if (!confirmDelete) return;
 
 //     try {
-//       // Replace 'services' with your actual Supabase table name and 'id' column
 //       await supabase.from('services').delete().eq('id', serviceId);
 //       if (mounted) {
 //         ScaffoldMessenger.of(context).showSnackBar(
@@ -188,6 +182,23 @@
 //     final TextEditingController priceController = TextEditingController(text: service?.price.toString() ?? '');
 //     final TextEditingController durationController = TextEditingController(text: service?.durationMinutes.toString() ?? '');
 
+//     // NEW: Reactive value for duration label
+//     ValueNotifier<String> durationLabel = ValueNotifier<String>('Duration (minutes)');
+
+//     // Initial label setup
+//     if (nameController.text.toLowerCase().contains('boarding')) {
+//       durationLabel.value = 'Duration (days)';
+//     }
+
+//     // Listener for name changes to update duration label
+//     nameController.addListener(() {
+//       if (nameController.text.toLowerCase().contains('boarding')) {
+//         durationLabel.value = 'Duration (days)';
+//       } else {
+//         durationLabel.value = 'Duration (minutes)';
+//       }
+//     });
+
 //     showDialog(
 //       context: context,
 //       builder: (context) {
@@ -211,10 +222,16 @@
 //                   decoration: const InputDecoration(labelText: 'Price'),
 //                   keyboardType: TextInputType.number,
 //                 ),
-//                 TextField(
-//                   controller: durationController,
-//                   decoration: const InputDecoration(labelText: 'Duration (minutes)'),
-//                   keyboardType: TextInputType.number,
+//                 // NEW: Use ValueListenableBuilder to dynamically update label
+//                 ValueListenableBuilder<String>(
+//                   valueListenable: durationLabel,
+//                   builder: (context, currentLabel, child) {
+//                     return TextField(
+//                       controller: durationController,
+//                       decoration: InputDecoration(labelText: currentLabel), // Dynamic label
+//                       keyboardType: TextInputType.number,
+//                     );
+//                   },
 //                 ),
 //               ],
 //             ),
@@ -247,8 +264,9 @@
 //                     durationMinutes: duration,
 //                   ));
 //                 } else {
+//                   // For new services, generate a UUID for the ID
 //                   await _addService(Service(
-//                     id: DateTime.now().millisecondsSinceEpoch.toString(), // Simple unique ID for example
+//                     id: UniqueKey().toString(), // Use a unique key for ID
 //                     name: name,
 //                     description: description,
 //                     price: price,
@@ -346,45 +364,57 @@
 //                               itemBuilder: (context, index) {
 //                                 final service = _services[index];
 //                                 return Card(
-//                                   margin: const EdgeInsets.symmetric(vertical: 8),
+//                                   margin: const EdgeInsets.symmetric(vertical: 6), // Reduced vertical margin
+//                                   elevation: 3, // Slightly less elevation for a flatter look
+//                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), // Slightly less rounded corners
 //                                   child: Padding(
-//                                     padding: const EdgeInsets.all(16.0),
+//                                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // Reduced padding
 //                                     child: Row(
 //                                       children: [
+//                                         // Service Icon
+//                                         Icon(
+//                                           Icons.miscellaneous_services, // Generic service icon
+//                                           size: 30, // Smaller icon
+//                                           color: Theme.of(context).colorScheme.primary,
+//                                         ),
+//                                         const SizedBox(width: 12),
 //                                         Expanded(
 //                                           child: Column(
 //                                             crossAxisAlignment: CrossAxisAlignment.start,
 //                                             children: [
 //                                               Text(
 //                                                 service.name,
-//                                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
+//                                                 style: Theme.of(context).textTheme.titleMedium?.copyWith( // Smaller title
 //                                                       fontWeight: FontWeight.bold,
-//                                                       color: Theme.of(context).colorScheme.primary,
+//                                                       color: Theme.of(context).colorScheme.onSurface,
 //                                                     ),
+//                                                 maxLines: 1,
+//                                                 overflow: TextOverflow.ellipsis,
 //                                               ),
-//                                               const SizedBox(height: 8),
 //                                               Text(
 //                                                 service.description,
-//                                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+//                                                 style: Theme.of(context).textTheme.bodySmall?.copyWith( // Smaller description
 //                                                       color: Theme.of(context).colorScheme.onSurfaceVariant,
 //                                                     ),
+//                                                 maxLines: 2,
+//                                                 overflow: TextOverflow.ellipsis,
 //                                               ),
-//                                               const SizedBox(height: 8),
+//                                               const SizedBox(height: 6),
 //                                               Row(
 //                                                 children: [
-//                                                   Icon(Icons.attach_money, size: 18, color: Colors.green[700]),
+//                                                   Icon(Icons.attach_money, size: 16, color: Colors.green[700]), // Smaller icon
 //                                                   Text(
 //                                                     'KES ${service.price.toStringAsFixed(2)}',
-//                                                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+//                                                     style: Theme.of(context).textTheme.bodySmall?.copyWith( // Smaller text
 //                                                           fontWeight: FontWeight.bold,
 //                                                           color: Colors.green[700],
 //                                                         ),
 //                                                   ),
-//                                                   const SizedBox(width: 20),
-//                                                   Icon(Icons.timer, size: 18, color: Theme.of(context).colorScheme.secondary),
+//                                                   const SizedBox(width: 12), // Reduced spacing
+//                                                   Icon(Icons.timer, size: 16, color: Theme.of(context).colorScheme.secondary), // Smaller icon
 //                                                   Text(
-//                                                     '${service.durationMinutes} mins',
-//                                                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+//                                                     '${service.durationMinutes} ${service.name.toLowerCase().contains('boarding') ? 'days' : 'mins'}', // Dynamic unit
+//                                                     style: Theme.of(context).textTheme.bodySmall?.copyWith( // Smaller text
 //                                                           fontWeight: FontWeight.bold,
 //                                                           color: Theme.of(context).colorScheme.secondary,
 //                                                         ),
@@ -395,14 +425,15 @@
 //                                           ),
 //                                         ),
 //                                         Column(
+//                                           mainAxisAlignment: MainAxisAlignment.center, // Center icons vertically
 //                                           children: [
 //                                             IconButton(
-//                                               icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+//                                               icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary, size: 22), // Smaller icon
 //                                               onPressed: () => _showServiceForm(service: service),
 //                                               tooltip: 'Edit Service',
 //                                             ),
 //                                             IconButton(
-//                                               icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+//                                               icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error, size: 22), // Smaller icon
 //                                               onPressed: () => _deleteService(service.id),
 //                                               tooltip: 'Delete Service',
 //                                             ),
@@ -433,16 +464,10 @@
 
 
 
-
-
-
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pawpal/services/pdf_receipt_service.dart' as pdf_service; // Import the aliased PDF service
 
 // Define a simple Service model
 class Service {
@@ -450,7 +475,7 @@ class Service {
   final String name;
   final String description;
   final double price;
-  final int durationMinutes; // For Boarding, this will represent 'days'
+  final int durationMinutes;
 
   Service({
     required this.id,
@@ -496,6 +521,10 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Filter state variables for services (if you want to add filters later)
+  // For now, _services will just hold all fetched services.
+  // If filters are implemented, this list would be the *filtered* list.
+
   @override
   void initState() {
     super.initState();
@@ -508,6 +537,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
       _errorMessage = null;
     });
     try {
+      
       final response = await supabase.from('services').select().order('name', ascending: true);
 
       _services = response.map((json) => Service.fromMap(json)).toList();
@@ -526,13 +556,14 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
 
   Future<void> _addService(Service service) async {
     try {
+      
       await supabase.from('services').insert(service.toMap());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Service added successfully!')),
         );
       }
-      _fetchServices(); // Refresh the list
+      _fetchServices(); 
     } on PostgrestException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -550,6 +581,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
 
   Future<void> _updateService(Service service) async {
     try {
+      // Replace 'services' with your actual Supabase table name and 'id' column
       await supabase.from('services').update(service.toMap()).eq('id', service.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -595,6 +627,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
     if (!confirmDelete) return;
 
     try {
+      // Replace 'services' with your actual Supabase table name and 'id' column
       await supabase.from('services').delete().eq('id', serviceId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -624,23 +657,6 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
     final TextEditingController priceController = TextEditingController(text: service?.price.toString() ?? '');
     final TextEditingController durationController = TextEditingController(text: service?.durationMinutes.toString() ?? '');
 
-    // NEW: Reactive value for duration label
-    ValueNotifier<String> durationLabel = ValueNotifier<String>('Duration (minutes)');
-
-    // Initial label setup
-    if (nameController.text.toLowerCase().contains('boarding')) {
-      durationLabel.value = 'Duration (days)';
-    }
-
-    // Listener for name changes to update duration label
-    nameController.addListener(() {
-      if (nameController.text.toLowerCase().contains('boarding')) {
-        durationLabel.value = 'Duration (days)';
-      } else {
-        durationLabel.value = 'Duration (minutes)';
-      }
-    });
-
     showDialog(
       context: context,
       builder: (context) {
@@ -664,16 +680,10 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                   decoration: const InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
                 ),
-                // NEW: Use ValueListenableBuilder to dynamically update label
-                ValueListenableBuilder<String>(
-                  valueListenable: durationLabel,
-                  builder: (context, currentLabel, child) {
-                    return TextField(
-                      controller: durationController,
-                      decoration: InputDecoration(labelText: currentLabel), // Dynamic label
-                      keyboardType: TextInputType.number,
-                    );
-                  },
+                TextField(
+                  controller: durationController,
+                  decoration: const InputDecoration(labelText: 'Duration (minutes)'),
+                  keyboardType: TextInputType.number,
                 ),
               ],
             ),
@@ -725,6 +735,32 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
     );
   }
 
+  // NEW: Method to export current services list to PDF
+  void _exportServicesToPdf() async {
+    if (_services.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No services to export!')),
+      );
+      return;
+    }
+    try {
+      // Call the new service report generation function
+      await pdf_service.generateAndHandleServiceReport(_services);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Service report generated successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate service report: $e')),
+        );
+      }
+      debugPrint('Error generating service report: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 600;
@@ -738,6 +774,18 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
             context.go('/admin_dashboard'); // Navigate back to the admin dashboard
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf), // PDF icon
+            onPressed: _exportServicesToPdf,
+            tooltip: 'Export to PDF',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchServices,
+            tooltip: 'Refresh Services',
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -855,7 +903,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                                                   const SizedBox(width: 12), // Reduced spacing
                                                   Icon(Icons.timer, size: 16, color: Theme.of(context).colorScheme.secondary), // Smaller icon
                                                   Text(
-                                                    '${service.durationMinutes} ${service.name.toLowerCase().contains('boarding') ? 'days' : 'mins'}', // Dynamic unit
+                                                    '${service.durationMinutes} mins',
                                                     style: Theme.of(context).textTheme.bodySmall?.copyWith( // Smaller text
                                                           fontWeight: FontWeight.bold,
                                                           color: Theme.of(context).colorScheme.secondary,

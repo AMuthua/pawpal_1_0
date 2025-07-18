@@ -334,6 +334,8 @@ import 'package:go_router/go_router.dart';
 import 'package:pawpal/features/admin/admin_bookings_screen.dart';
 import 'package:pawpal/features/pets/add_pet_screen.dart';
 import 'package:pawpal/features/pets/pet_list_screen.dart';
+import 'package:pawpal/features/support/customer_support_screen.dart';
+import 'package:pawpal/models/support_chat.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 import 'package:provider/provider.dart'; // Import Provider
 import 'package:pawpal/providers/profile_provider.dart'; // NEW: Import ProfileProvider
@@ -351,6 +353,8 @@ import 'package:pawpal/features/bookings/my_bookings_screen.dart';
 import 'package:pawpal/features/admin/admin_dashboard_screen.dart'; // NEW: Import AdminDashboardScreen
 import 'package:pawpal/features/admin/admin_user_management_screen.dart'; // NEW: Import AdminUserManagementScreen
 import 'package:pawpal/features/admin/manage_services_screen.dart'; // NEW: Import ManageServicesScreen
+
+import 'package:pawpal/features/support/client_chat_screen.dart'; // Add this line
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -424,7 +428,30 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/pets', builder: (context, state) => const PetListScreen()),
     GoRoute(path: '/pets/add', builder: (context, state) => const AddPetScreen()),
-    GoRoute(path: '/support', builder: (context, state) => const PlaceholderScreen(title: 'Support')),
+    // GoRoute(path: '/support', builder: (context, state) => const PlaceholderScreen(title: 'Support')),
+
+
+    GoRoute(
+      path: '/support',
+      builder: (context, state) => const CustomerSupportScreen(),
+      routes: [
+        GoRoute(
+          path: 'chat/:chatId', // e.g., /support/chat/123-abc-xyz
+          builder: (context, state) {
+            final chatId = state.pathParameters['chatId']!;
+            // Optionally pass the chat object if coming from the list
+            final chat = state.extra as SupportChat?;
+            return ClientChatScreen(chatId: chatId, initialChat: chat);
+          },
+        ),
+      ],
+    ),
+
+
+
+
+
+
     GoRoute(
       path: '/book',
       builder: (context, state) => const BookServiceScreen(),

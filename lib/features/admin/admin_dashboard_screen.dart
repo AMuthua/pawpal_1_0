@@ -839,7 +839,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart'; // Import provider
 import 'package:pawpal/providers/admin_stats_provider.dart'; // Import the new provider
-import 'package:postgrest/postgrest.dart'; // Required for CountOption
+// Required for CountOption
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});

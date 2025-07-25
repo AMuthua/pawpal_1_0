@@ -54,4 +54,5 @@ supabase/functions/mpesa-handler/deno.json
 /supabase/functions/mpesa-query-status
 supabase/functions/mpesa-query-status/index.ts
 supabase/functions/mpesa-query-status/index.ts
+filestructure.txt
 supabase/functions/ai-support-agent/index.ts

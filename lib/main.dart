@@ -222,19 +222,21 @@ void main() async {
   final bookingProvider = BookingProvider();
   final adminStatsProvider = AdminStatsProvider();
 
+  final supabaseClient = Supabase.instance.client;
+
   // Create an instance of SupportChatService
-  final supportChatService = SupportChatService(); // Create instance here
+  final supportChatService = SupportChatService(supabaseClient); // Create instance here
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeService>(create: (context) => themeService),
-        ChangeNotifierProvider<PetProvider>(create: (context) => petProvider),
-        ChangeNotifierProvider<BookingProvider>(create: (context) => bookingProvider),
-        ChangeNotifierProvider<AdminStatsProvider>(create: (context) => adminStatsProvider),
-        ChangeNotifierProvider<ProfileProvider>(create: (context) => ProfileProvider()),
+        Provider<PetProvider>(create: (context) => petProvider),
+        Provider<BookingProvider>(create: (context) => bookingProvider),
+        Provider<AdminStatsProvider>(create: (context) => adminStatsProvider),
+        Provider<ProfileProvider>(create: (context) => ProfileProvider()),
         // ADD THIS LINE: Provide SupportChatService
-        ChangeNotifierProvider<SupportChatService>(create: (context) => supportChatService), 
+        Provider<SupportChatService>(create: (context) => supportChatService), 
       ],
       child: const MyApp(),
     ),

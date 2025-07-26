@@ -1,4 +1,5 @@
 // lib/services/support_chat_service.dart
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pawpal/models/support_chat.dart';
 import 'package:pawpal/models/support_message.dart'; // Ensure this is imported
@@ -77,13 +78,13 @@ class SupportChatService {
         });
   }
 
-  // 5. Add a message to a chat
-  // Future<void> addMessageToChat({
+  //  Future<void> addMessageToChat({
   //   required String chatId,
   //   required String senderId,
   //   required String senderDisplayName,
   //   required String content,
   //   required bool isClient, // True if sent by client, false if by admin
+  //   required String senderRole, // <--- ADD THIS NEW PARAMETER
   // }) async {
   //   try {
   //     await _supabase.from('support_messages').insert({
@@ -93,51 +94,79 @@ class SupportChatService {
   //       'content': content,
   //       'is_client': isClient,
   //       'created_at': DateTime.now().toIso8601String(),
+  //       'sender_role': senderRole, // <--- ADD THIS TO THE INSERT
   //     });
 
-   Future<void> addMessageToChat({
+  //     // Update the last_message_at and read status in the chat
+  //     await _supabase.from('support_chats').update({
+  //       'last_message_at': DateTime.now().toIso8601String(),
+  //       // Mark as unread for the *other* party
+  //       'is_read_by_user': !isClient, // If admin sends, client hasn't read
+  //       'is_read_by_admin': isClient, // If client sends, admin hasn't read
+  //     }).eq('id', chatId);
+  //   } catch (e) {
+  //     throw Exception('Failed to add message to chat: $e');
+  //   }
+  // }
+
+  // 5. Add a message to a chat
+  Future<void> addMessageToChat({
     required String chatId,
     required String senderId,
     required String senderDisplayName,
     required String content,
-    required bool isClient, // True if sent by client, false if by admin
-    required String senderRole, // <--- ADD THIS NEW PARAMETER
+    required bool isClient,
+    required String senderRole,
   }) async {
     try {
-      await _supabase.from('support_messages').insert({
+      final response = await _supabase.from('support_messages').insert({
         'chat_id': chatId,
         'sender_id': senderId,
         'sender_display_name': senderDisplayName,
         'content': content,
         'is_client': isClient,
+        'sender_role': senderRole,
         'created_at': DateTime.now().toIso8601String(),
-        'sender_role': senderRole, // <--- ADD THIS TO THE INSERT
-      });
+      }).select().single(); // Use .select().single() to get the inserted record
 
       // Update the last_message_at and read status in the chat
       await _supabase.from('support_chats').update({
         'last_message_at': DateTime.now().toIso8601String(),
-        // Mark as unread for the *other* party
-        'is_read_by_user': !isClient, // If admin sends, client hasn't read
-        'is_read_by_admin': isClient, // If client sends, admin hasn't read
+        'is_read_by_user': !isClient,
+        'is_read_by_admin': isClient,
       }).eq('id', chatId);
+
+      // --- NEW: Invoke the AI Edge Function if the message is from the client ---
+      if (isClient) {
+        // Pass the entire inserted message record to the Edge Function
+        // The Edge Function expects a 'record' field in its payload
+        final edgeFunctionResponse = await _supabase.functions.invoke(
+          'ai-support-agent', // The name of your deployed Edge Function
+          body: { 'record': response }, // Send the full inserted message
+        );
+        debugPrint('Edge Function invoked: ${edgeFunctionResponse.data}');
+      }
+      // -------------------------------------------------------------------------
+
     } catch (e) {
       throw Exception('Failed to add message to chat: $e');
     }
   }
 
+
   // 6. Get messages for a specific chat (stream)
   Stream<List<SupportMessage>> getMessagesForChatStream(String chatId) {
-  return _supabase
-      .from('support_messages')
-      .stream(primaryKey: ['id'])
-      .eq('chat_id', chatId)
-      .order('created_at', ascending: true) // <--- CHANGE THIS TO TRUE
-      .map((data) {
-        final List<Map<String, dynamic>> typedData = List<Map<String, dynamic>>.from(data);
-        return typedData.map((json) => SupportMessage.fromJson(json)).toList();
-      });
-}
+    return _supabase
+        .from('support_messages')
+        .stream(primaryKey: ['id']) // Ensure 'id' is indeed the primary key of support_messages
+        .eq('chat_id', chatId)
+        .order('created_at', ascending: true)
+        .map((data) {
+          // Explicitly cast the incoming 'data' to List<Map<String, dynamic>>
+          final List<Map<String, dynamic>> typedData = List<Map<String, dynamic>>.from(data);
+          return typedData.map((json) => SupportMessage.fromJson(json)).toList();
+        });
+  }
 
   // 7. Mark chat as read by client
   Future<void> markChatAsReadByClient(String chatId) async {

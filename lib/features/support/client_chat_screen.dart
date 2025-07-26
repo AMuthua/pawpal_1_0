@@ -224,8 +224,8 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
                 final displayedMessages = messages.reversed.toList(); 
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   reverse: true,
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   itemCount: displayedMessages.length,
                   itemBuilder: (context, index) {
                     final message = displayedMessages[index];

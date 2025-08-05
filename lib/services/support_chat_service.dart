@@ -156,17 +156,16 @@ class SupportChatService {
 
   // 6. Get messages for a specific chat (stream)
   Stream<List<SupportMessage>> getMessagesForChatStream(String chatId) {
-    return _supabase
-        .from('support_messages')
-        .stream(primaryKey: ['id']) // Ensure 'id' is indeed the primary key of support_messages
-        .eq('chat_id', chatId)
-        .order('created_at', ascending: true)
-        .map((data) {
-          // Explicitly cast the incoming 'data' to List<Map<String, dynamic>>
-          final List<Map<String, dynamic>> typedData = List<Map<String, dynamic>>.from(data);
-          return typedData.map((json) => SupportMessage.fromJson(json)).toList();
-        });
-  }
+  return _supabase
+      .from('support_messages')
+      .stream(primaryKey: ['id'])
+      .eq('chat_id', chatId)
+      .order('created_at', ascending: true)
+      .map((messages) {
+        // Correctly cast each item in the list before converting it
+        return messages.map((message) => SupportMessage.fromJson(message as Map<String, dynamic>)).toList();
+      });
+}
 
   // 7. Mark chat as read by client
   Future<void> markChatAsReadByClient(String chatId) async {
@@ -201,3 +200,5 @@ class SupportChatService {
     }
   }
 }
+
+  

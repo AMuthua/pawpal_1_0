@@ -247,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ListTile(
               leading: Icon(Icons.calendar_month, color: Theme.of(context).colorScheme.secondary),
-              title: const Text('Book a New Service'),
+              title: const Text('Book your pet Service'),
               subtitle: const Text('Schedule boarding, grooming, or vet visits'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () => context.push('/book'),

@@ -42,7 +42,7 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
     } else {
       _currentUserId = currentUser.id;
       _currentUserDisplayName = currentUser.userMetadata?['full_name'] as String? ?? currentUser.email ?? 'Anonymous User';
-      debugPrint('ClientChatScreen: Initialized for user: $_currentUserId (${_currentUserDisplayName})');
+      debugPrint('ClientChatScreen: Initialized for user: $_currentUserId ($_currentUserDisplayName)');
 
       _loadChatDetails();
       _markChatAsRead();
@@ -132,18 +132,18 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                title: const Text('Open'),
-                onTap: () => Navigator.of(dialogContext).pop('open'),
-              ),
+              // ListTile(
+              //   title: const Text('Open'),
+              //   onTap: () => Navigator.of(dialogContext).pop('open'),
+              // ),
               ListTile(
                 title: const Text('Resolved'),
                 onTap: () => Navigator.of(dialogContext).pop('resolved'),
               ),
-              ListTile(
-                title: const Text('Closed'),
-                onTap: () => Navigator.of(dialogContext).pop('closed'),
-              ),
+              // ListTile(
+              //   title: const Text('Closed'),
+              //   onTap: () => Navigator.of(dialogContext).pop('closed'),
+              // ),
             ],
           ),
         );
@@ -224,11 +224,11 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
                 final displayedMessages = messages.reversed.toList(); 
 
                 return ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  itemCount: displayedMessages.length,
-                  itemBuilder: (context, index) {
-                    final message = displayedMessages[index];
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                    final message = messages[index];
                     // FIX: Use null-aware operator for message.isClient
                     final isMe = message.isClient ?? false; // Default to false if isClient is null
 

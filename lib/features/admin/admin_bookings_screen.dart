@@ -110,7 +110,6 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
     'rejected',
     'completed',
     'cancelled',
-    'unpaid',
     'pending_payment'
   ];
 
@@ -653,6 +652,8 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
       case 'cancelled':
         return Colors.grey;
       case 'unpaid':
+        return Colors.purple;
+      case 'pending_payment':
         return Colors.purple;
       default:
         return Colors.grey;

@@ -169,8 +169,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     try {
       if (await _checkForConflict()) return;
 
-      final bookingId = await _createBookingRecord('Booked (Unpaid)');
-      _bookingStatus = 'Booked (Unpaid)';
+      final bookingId = await _createBookingRecord('pending');
+      _bookingStatus = 'pending';
       
       setState(() {
         _isPaymentCompleted = true;
@@ -270,7 +270,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final session = Supabase.instance.client.auth.currentSession;
       final accessToken = session?.accessToken;
 
-      _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      _pollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
         _pollingAttempts++;
         try {
           final url = Uri.parse('https://zoyuahsnhrhxuukjveck.supabase.co/functions/v1/mpesa-query-status');
@@ -520,7 +520,7 @@ void dispose() {
                       decoration: BoxDecoration(
                         color: _bookingStatus == 'Paid' 
                             ? Colors.green[50] 
-                            : Colors.orange[50],
+                            : Colors.orange[50], // Light background
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _bookingStatus == 'Paid' 
@@ -551,47 +551,39 @@ void dispose() {
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                         color: _bookingStatus == 'Paid' 
                                             ? Colors.green[800] 
-                                            : Colors.orange[800],
+                                            : Colors.orange[800], // Dark color for contrast
                                         fontWeight: FontWeight.bold,
                                       ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text('Status: $_bookingStatus'),
+                                Text(
+                                  'Status: $_bookingStatus',
+                                  style: TextStyle(
+                                    color: _bookingStatus == 'Paid' 
+                                        ? Colors.green[800] 
+                                        : Colors.orange[800], // Set color explicitly
+                                  ),
+                                ),
                                 if (_bookingStatus == 'Pending Payment')
-                                  const Text('Complete payment on your phone'),
+                                  Text(
+                                    'Complete payment on your phone',
+                                    style: TextStyle(
+                                      color: Colors.orange[800], // Set color explicitly
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    
-                    // Only show receipt button for paid bookings
-                    if (_bookingStatus == 'Paid')
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _generateReceipt,
-                          icon: const Icon(Icons.receipt_long),
-                          label: const Text('Download Receipt'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
                   ],
 
 
                   const SizedBox(height: 24),
                   Center(
                     child: TextButton(
-                      onPressed: () => context.go('/home'),
+                      onPressed: () => context.push('/home'),
                       child: Text(
                         'Back to Home',
                         style: TextStyle(

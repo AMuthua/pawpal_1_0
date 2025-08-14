@@ -270,7 +270,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final session = Supabase.instance.client.auth.currentSession;
       final accessToken = session?.accessToken;
 
-      _pollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      _pollingTimer = Timer.periodic(const Duration(seconds: 15), (timer) async {
         _pollingAttempts++;
         try {
           final url = Uri.parse('https://zoyuahsnhrhxuukjveck.supabase.co/functions/v1/mpesa-query-status');

@@ -136,10 +136,10 @@ serve(async (req) => {
     let mpesaReceiptNumber = null;
 
     // Determine the booking status based on M-Pesa ResultCode
-    if (queryResult.ResultCode === 0) {
+    if (queryResult.ResultCode == 0) {
       updatedStatus = "Paid";
       mpesaReceiptNumber = queryResult.MpesaReceiptNumber;
-    } else if (queryResult.ResultCode === 1032 || queryResult.ResultCode === 2001) {
+    } else if (queryResult.ResultCode == 1032 || queryResult.ResultCode == 2001) {
       updatedStatus = "Cancelled";
     } else {
       // For other error codes, keep as "Payment Failed" or map more specifically if needed

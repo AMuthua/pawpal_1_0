@@ -650,10 +650,10 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
       case 'completed':
         return Colors.blueGrey;
       case 'cancelled':
-        return Colors.grey;
+        return const Color.fromARGB(255, 7, 207, 233);
       case 'unpaid':
         return Colors.purple;
-      case 'pending_payment':
+      case 'pending payment':
         return Colors.purple;
       default:
         return Colors.grey;

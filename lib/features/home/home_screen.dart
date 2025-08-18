@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            _buildDrawerItem(Icons.home, 'Home', () => context.go('/')),
+            _buildDrawerItem(Icons.home, 'Home', () => context.push('/')),
             _buildDrawerItem(Icons.pets, 'Book a Pet Service', () => context.push('/book')),
             _buildDrawerItem(Icons.folder_shared, 'Manage Pet Profiles', () => context.push('/pets')),
             _buildDrawerItem(Icons.history, 'My Bookings', () => context.push('/my_bookings')),

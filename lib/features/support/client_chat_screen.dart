@@ -355,7 +355,7 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
     if (currentUser == null) {
       debugPrint('ClientChatScreen initState: User not logged in, navigating home.');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/');
+        if (mounted) context.push('/');
       });
       _currentUserId = '';
       _currentUserDisplayName = 'N/A';

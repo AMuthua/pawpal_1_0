@@ -487,7 +487,11 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                 },
                 child: Card(
                   elevation: isUnread ? 4 : 1,
-                  color: isUnread ? Colors.lightBlue.shade50 : Theme.of(context).cardColor,
+                  color: isUnread
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blueGrey.shade800 // A darker color for dark mode
+                          : Colors.lightBlue.shade50) // The original color for light mode
+                      : Theme.of(context).cardColor,
                   margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                   child: ListTile(
                     title: Text(
@@ -511,6 +515,11 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                         : null,
                     onTap: () {
                       debugPrint('Tapped on chat ID: ${chat.id}');
+
+                      if (!chat.isReadByUser) {
+                      _chatService.markChatAsRead(chat.id);
+                    }
+
                       context.push('/support/chat/${chat.id}'); 
                     },
                   ),

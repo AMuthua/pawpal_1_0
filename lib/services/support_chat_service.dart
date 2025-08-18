@@ -355,4 +355,15 @@ class SupportChatService {
       throw Exception('Failed to delete chat: $e');
     }
   }
+
+  Future<void> markChatAsRead(String chatId) async {
+  try {
+    await _supabase.from('support_chats').update({
+      'is_read_by_user': true,
+    }).eq('id', chatId);
+    debugPrint('Chat $chatId marked as read.');
+  } catch (e) {
+    debugPrint('Error marking chat as read: $e');
+  }
+}
 }

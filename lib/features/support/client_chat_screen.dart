@@ -553,14 +553,13 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
 
                 final messages = snapshot.data!;
                 
-                return ListView.builder(
-                  // FIX: Use 'reverse: true' and remove `.reversed.toList()`
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final isMe = message.isClient ?? false;
+                    return ListView.builder(
+                      reverse: true, // This property handles the display order
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      itemCount: messages.length, // Use the original message list
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        final isMe = message.isClient ?? false;
 
                     // --- NEW: Wrap with a GestureDetector for long-press deletion ---
                     return GestureDetector(

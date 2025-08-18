@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(icon == Icons.pets ? Icons.visibility : Icons.list_alt),
                   label: Text(buttonLabel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: Theme.of(context).primaryColor, 
                     foregroundColor: Colors.white,
                   ),
                 ),

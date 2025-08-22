@@ -24,6 +24,8 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
 
   SupportChat? _currentChat;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +115,9 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
         senderRole: 'client',
       );
       debugPrint('ClientChatScreen: Message sent successfully.');
+      
+      // Now that the message has been sent, scroll to the bottom
+      _scrollToBottom();
     } catch (e) {
       debugPrint('ClientChatScreen: Failed to send message: $e');
       if (mounted) {
@@ -123,7 +128,18 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
     }
   }
 
-  // --- NEW: Method to handle single message deletion ---
+  // Method to scroll the list to the bottom
+  void _scrollToBottom() {
+    // We use a small delay to ensure the list has rebuilt before we try to scroll.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        // We use jumpTo(0) because reverse: true means 0 is the bottom of the list.
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
+
+  // Method to handle single message deletion
   Future<void> _deleteMessage(String messageId) async {
     try {
       await _chatService.deleteMessage(messageId);
@@ -236,7 +252,12 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
                 // Sort the messages by created_at in ascending order to ensure they are chronological
                 messages.sort((a, b) => (a.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)).compareTo(b.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)));
 
+                // Scroll to the bottom whenever new data is loaded
+                _scrollToBottom();
+
                 return ListView.builder(
+                  // Attach the ScrollController
+                  controller: _scrollController,
                   // This property handles the display order
                   reverse: true, 
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -245,36 +266,38 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
                     final message = messages[index];
                     final isMe = message.isClient ?? false;
 
-                    // --- NEW: Wrap with a GestureDetector for long-press deletion ---
-                    return GestureDetector(
-                      onLongPress: () {
-                        // Show a confirmation dialog before deleting
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Delete Message'),
-                              content: const Text('Are you sure you want to delete this message?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    _deleteMessage(message.id);
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Align(
-                        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    // New: Use a Flexible and a container to fix the Tetris effect
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: GestureDetector(
+                        onLongPress: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Delete Message'),
+                                content: const Text('Are you sure you want to delete this message?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      _deleteMessage(message.id);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                         child: Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                          ),
                           margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
@@ -352,6 +375,7 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
   @override
   void dispose() {
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }
@@ -359,4 +383,4 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
 
 
 
-// New updates test 5. 
+// New updates test 8. 

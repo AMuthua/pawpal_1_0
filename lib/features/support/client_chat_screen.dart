@@ -1,5 +1,3 @@
-// New things Test for update. 
-
 // lib/features/support/client_chat_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -235,12 +233,12 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
 
                 final messages = snapshot.data!;
                 
-                // Sort the messages by created_at in descending order to ensure newest are at the bottom
-                messages.sort((a, b) => (b.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)).compareTo(a.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)));
+                // Sort the messages by created_at in ascending order to ensure they are chronological
+                messages.sort((a, b) => (a.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)).compareTo(b.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0)));
 
                 return ListView.builder(
-                  // Set reverse to false since we're now sorting in descending order
-                  reverse: false, 
+                  // This property handles the display order
+                  reverse: true, 
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   itemCount: messages.length, 
                   itemBuilder: (context, index) {
@@ -357,3 +355,8 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
     super.dispose();
   }
 }
+
+
+
+
+// New updates test 5. 

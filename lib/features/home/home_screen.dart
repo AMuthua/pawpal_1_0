@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(width: 16),
         _buildSummaryCard(
           icon: Icons.event_note,
-          color: Colors.green,
+          color: const Color.fromARGB(255, 108, 32, 99),
           value: _upcomingBookingsCount,
           isLoading: _isLoadingBookingsCount,
           label: 'Your Pet Schedule',

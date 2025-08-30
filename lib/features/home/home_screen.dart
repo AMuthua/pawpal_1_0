@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            _buildDrawerItem(Icons.home, 'Home', () => context.go('/')),
+            _buildDrawerItem(Icons.home, 'Home', () => context.push('/')),
             _buildDrawerItem(Icons.pets, 'Book a Pet Service', () => context.push('/book')),
             _buildDrawerItem(Icons.folder_shared, 'Manage Pet Profiles', () => context.push('/pets')),
             _buildDrawerItem(Icons.history, 'My Bookings', () => context.push('/my_bookings')),
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(width: 16),
         _buildSummaryCard(
           icon: Icons.event_note,
-          color: Colors.green,
+          color: const Color.fromARGB(255, 108, 32, 99),
           value: _upcomingBookingsCount,
           isLoading: _isLoadingBookingsCount,
           label: 'Your Pet Schedule',
@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(icon == Icons.pets ? Icons.visibility : Icons.list_alt),
                   label: Text(buttonLabel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: Theme.of(context).primaryColor, 
                     foregroundColor: Colors.white,
                   ),
                 ),

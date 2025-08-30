@@ -1694,7 +1694,7 @@ class BookingCard extends StatelessWidget {
       case 'completed':
         return Colors.blueGrey;
       case 'cancelled':
-        return Colors.grey;
+        return const Color.fromARGB(255, 7, 207, 233);
       case 'unpaid':
         return Colors.purpleAccent;
       default:
